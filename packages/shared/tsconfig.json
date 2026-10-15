@@ -1,9 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node10",
-    "types": ["jest"],
+    // CommonJS output (no "type": "module") so it loads in Node ESM, Node CJS and Metro alike.
+    "module": "node16",
+    "moduleResolution": "node16",
+    "types": ["vitest/globals"],
     "noEmit": true
   },
   "include": ["src"]

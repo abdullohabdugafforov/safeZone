@@ -63,7 +63,8 @@ Keep this section in sync when scripts change.
 - API: REST under `/v1`, JSON, errors as `{ error: { code, message, details? } }`. Realtime via Socket.IO namespace `/realtime`.
 - Mobile: Expo Router file-based routes split into `(parent)` and `(child)` groups. Server state via TanStack Query; small local state via Zustand. Tokens in `expo-secure-store`.
 - Native (Kotlin): policy and device credentials persisted in encrypted storage; enforcement logic must not depend on the JS runtime being alive.
-- Tests: Jest. Backend e2e tests run against a real Postgres (test database) — required for auth, pairing and policy access control.
+- Tests: Vitest for backend and shared (NestJS 12 default), jest-expo for mobile. Backend e2e tests run against a real Postgres (test database) — required for auth, pairing and policy access control.
+- Backend is ESM (NestJS 12 is ESM-only): relative imports use `.js` extensions. `packages/shared` compiles to CommonJS so Node ESM, Node CJS and Metro can all load it.
 - Formatting: Prettier + ESLint; run before committing.
 
 ## Workflow

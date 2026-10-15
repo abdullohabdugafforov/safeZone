@@ -21,8 +21,8 @@ Record significant decisions as short ADRs in `docs/decisions/NNNN-title.md`
 - Push (FCM/WebSocket) is only a "sync" hint; state is always pulled over REST.
 - Multiple parents per family are supported by the schema; invite UI is out of Phase 1.
 - UI languages: Uzbek (default), Russian, English.
-- Tooling: TypeScript 5.9 (TS 7 native compiler is not yet supported by ts-jest /
-  Nest tooling), Prisma 7 stable, NestJS 12, Expo SDK 57.
+- Tooling: TypeScript 6.0 (TS 7 native compiler is not yet supported by
+  typescript-eslint), Prisma 7 stable, NestJS 12 (ESM + Vitest), Expo SDK 57.
 
 ## Consequences
 
