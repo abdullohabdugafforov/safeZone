@@ -9,6 +9,7 @@ import { configureApp } from '../src/app.factory.js';
 import { AppModule } from '../src/app.module.js';
 import type { Env } from '../src/config/env.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import { PushProvider, type PushMessage, type PushResult } from '../src/push/push.provider.js';
 import { REDIS } from '../src/redis/redis.module.js';
 import { SmsProvider } from '../src/sms/sms.provider.js';
 import { testEnv } from './env.js';
@@ -29,24 +30,39 @@ export class FakeSmsProvider extends SmsProvider {
   }
 }
 
+/** Captures pushes; tokens listed in `invalidTokens` report as unregistered. */
+export class FakePushProvider extends PushProvider {
+  readonly sent: PushMessage[] = [];
+  readonly invalidTokens = new Set<string>();
+
+  async send(message: PushMessage): Promise<PushResult> {
+    this.sent.push(message);
+    return this.invalidTokens.has(message.token) ? 'invalid-token' : 'sent';
+  }
+}
+
 export interface TestContext {
   app: NestExpressApplication;
   prisma: PrismaService;
   redis: Redis;
   env: Env;
   sms: FakeSmsProvider;
+  push: FakePushProvider;
 }
 
 export async function createTestApp(): Promise<TestContext> {
   const env = testEnv();
   const sms = new FakeSmsProvider();
+  const push = new FakePushProvider();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule.forRoot(env)] })
     .overrideProvider(SmsProvider)
     .useValue(sms)
+    .overrideProvider(PushProvider)
+    .useValue(push)
     .compile();
   const app = configureApp(moduleRef.createNestApplication<NestExpressApplication>(), env);
   await app.init();
-  return { app, env, sms, prisma: app.get(PrismaService), redis: app.get(REDIS) };
+  return { app, env, sms, push, prisma: app.get(PrismaService), redis: app.get(REDIS) };
 }
 
 /** Wipes all data between tests (keeps the schema). */
@@ -56,6 +72,13 @@ export async function resetState({ prisma, redis }: TestContext): Promise<void> 
   const list = tables.map(({ tablename }) => `"public"."${tablename}"`).join(', ');
   await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${list} RESTART IDENTITY CASCADE`);
   await redis.flushdb();
+}
+
+/** Clears captured SMS and pushes. */
+export function clearOutbox(ctx: TestContext): void {
+  ctx.sms.sent.length = 0;
+  ctx.push.sent.length = 0;
+  ctx.push.invalidTokens.clear();
 }
 
 /** Logs a parent in through the real OTP flow. */

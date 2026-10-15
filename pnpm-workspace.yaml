@@ -7,6 +7,9 @@ allowBuilds:
   # Ship prebuilt binaries; install scripts not needed.
   '@parcel/watcher': false
   unrs-resolver: false
+  # Browser autoinit defaults / CLI version check; not needed on the server.
+  '@firebase/util': false
+  protobufjs: false
   # Downloads the schema engine used by `prisma migrate`.
   '@prisma/engines': true
   prisma: true
