@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+**/dist
+**/build
+**/.expo
+**/android
+**/ios
+**/generated
+coverage
