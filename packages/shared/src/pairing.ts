@@ -103,3 +103,12 @@ export const approvePairingBodySchema = z.union([
   z.object({ newChildName: displayNameSchema }).strict(),
 ]);
 export type ApprovePairingBody = z.infer<typeof approvePairingBodySchema>;
+
+export const approvePairingResponseSchema = z.object({
+  deviceId: idSchema,
+  childId: idSchema,
+});
+export type ApprovePairingResponse = z.infer<typeof approvePairingResponseSchema>;
+
+/** Pending requests expire if the parent does not decide in time. */
+export const PAIRING_REQUEST_TTL_SECONDS = 15 * 60;

@@ -64,7 +64,7 @@ Key principles:
 
 - OTP: 6 digits, stored as HMAC hash, TTL 5 min, max 5 verification attempts, resend cooldown 60 s, per-phone and per-IP limits in Redis (e.g. 5 requests / hour / phone, 20 / hour / IP).
 - Phone numbers normalized to E.164 (`libphonenumber-js`).
-- Guards: `UserAuthGuard`, `DeviceAuthGuard`, and resource guards (`FamilyMemberGuard`, `ChildAccessGuard`, `DeviceAccessGuard`) that load the resource and verify the caller's family membership.
+- Guards: `UserAuthGuard`, `DeviceAuthGuard` (also rejects unlinked devices). Resource access goes through `FamilyAccessService` (`requireMembership`, `requireChild`, `requireDevice`), which scopes every lookup by the caller's family membership and returns 404 for other families' resources so their existence is not revealed.
 
 ## 3. Data model
 
@@ -357,12 +357,11 @@ All under `/v1`. 🔒U = user JWT, 🔒D = device JWT.
 
 **Families & children**
 
-| Method           | Path                      | Auth |                                                                  |
-| ---------------- | ------------------------- | ---- | ---------------------------------------------------------------- |
-| POST             | `/families`               | 🔒U  | create (first parent becomes owner; auto-created on first login) |
-| GET              | `/families/mine`          | 🔒U  |                                                                  |
-| POST/GET         | `/families/{id}/children` | 🔒U  | create/list child profiles                                       |
-| GET/PATCH/DELETE | `/children/{id}`          | 🔒U  |                                                                  |
+| Method           | Path                      | Auth |                                               |
+| ---------------- | ------------------------- | ---- | --------------------------------------------- |
+| GET              | `/families/mine`          | 🔒U  | family is auto-created (owner) on first login |
+| POST/GET         | `/families/{id}/children` | 🔒U  | create/list child profiles                    |
+| GET/PATCH/DELETE | `/children/{id}`          | 🔒U  |                                               |
 
 **Pairing**
 
@@ -371,7 +370,7 @@ All under `/v1`. 🔒U = user JWT, 🔒D = device JWT.
 | POST   | `/families/{id}/pairing-codes`     | 🔒U         | issue code + QR payload                                |
 | DELETE | `/pairing-codes/{id}`              | 🔒U         | revoke                                                 |
 | POST   | `/pairing/requests`                | —           | child submits `{code}` or `{parentPhone}` + deviceInfo |
-| GET    | `/pairing/requests/{id}`           | claimSecret | child polls status                                     |
+| POST   | `/pairing/requests/{id}/status`    | claimSecret | child polls status (secret in body, never in URL)      |
 | POST   | `/pairing/requests/{id}/claim`     | claimSecret | get device creds after approval                        |
 | GET    | `/pairing/requests?status=pending` | 🔒U         | parent inbox                                           |
 | POST   | `/pairing/requests/{id}/approve`   | 🔒U         | `{childId}` or `{newChildName}`                        |

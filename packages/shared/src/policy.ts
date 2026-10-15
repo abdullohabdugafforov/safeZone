@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { appIdSchema, idSchema, isoDateTimeSchema, timeZoneSchema } from './common';
 
 export const POLICY_SCHEMA_VERSION = 1;
+export const DEFAULT_TIMEZONE = 'Asia/Tashkent';
 export const MAX_POLICY_APPS = 500;
 
 const appListSchema = z
