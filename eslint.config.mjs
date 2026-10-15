@@ -27,5 +27,13 @@ export default tseslint.config(
       '@typescript-eslint/consistent-type-imports': 'error',
     },
   },
+  {
+    // NestJS DI reads constructor types via emitted decorator metadata, so those
+    // imports must stay value imports; tell the type-import rule about it.
+    files: ['apps/backend/**/*.ts'],
+    languageOptions: {
+      parserOptions: { emitDecoratorMetadata: true, experimentalDecorators: true },
+    },
+  },
   prettier,
 );

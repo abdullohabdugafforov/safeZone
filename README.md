@@ -30,7 +30,19 @@ cp .env.example .env               # dev service ports/credentials
 docker compose up -d               # Postgres on :5433, Redis on :6380
 ```
 
-Backend and mobile setup steps are added as those apps land (see below).
+### Backend
+
+```bash
+cp apps/backend/.env.example apps/backend/.env
+# replace JWT_ACCESS_SECRET and HASH_PEPPER: openssl rand -base64 48
+pnpm --filter @safekid/shared build   # backend consumes the compiled shared package
+pnpm --filter backend prisma:migrate  # apply migrations to the dev database
+pnpm --filter backend dev             # http://localhost:3000/v1/health
+pnpm --filter backend test            # unit + e2e (uses the safekid_test database)
+```
+
+In development OTP codes are printed to the backend log (`SMS_PROVIDER=console`)
+and pushes are logged instead of sent (`PUSH_PROVIDER=console`).
 
 ## Common commands
 

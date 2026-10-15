@@ -3,7 +3,10 @@ packages:
   - packages/*
 
 # pnpm blocks dependency build scripts by default; list explicit decisions here.
-# Both packages ship prebuilt binaries, so their install scripts are not needed.
 allowBuilds:
+  # Ship prebuilt binaries; install scripts not needed.
   '@parcel/watcher': false
   unrs-resolver: false
+  # Downloads the schema engine used by `prisma migrate`.
+  '@prisma/engines': true
+  prisma: true
