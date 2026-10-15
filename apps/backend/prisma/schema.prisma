@@ -1,0 +1,345 @@
+// Data model — see docs/ARCHITECTURE.md §3.
+// Enums mirror packages/shared; src/prisma/enums.spec.ts keeps them in sync.
+
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  moduleFormat           = "esm"
+  importFileExtension    = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum FamilyRole {
+  owner
+  parent
+}
+
+enum Platform {
+  android
+  ios
+}
+
+enum DeviceStatus {
+  active
+  unlinked
+}
+
+enum PairingMethod {
+  code
+  phone
+}
+
+enum PairingRequestStatus {
+  pending
+  approved
+  rejected
+  expired
+}
+
+enum CommandType {
+  SYNC_NOW
+  REPORT_APPS
+  REFRESH_PERMISSIONS
+}
+
+enum CommandStatus {
+  pending
+  delivered
+  applied
+  failed
+  expired
+}
+
+enum AlertType {
+  PERMISSION_REVOKED
+  DEVICE_ADMIN_DISABLE_REQUESTED
+  DEVICE_ADMIN_DISABLED
+  ENFORCEMENT_STOPPED
+  TIME_CHANGED
+  HEARTBEAT_LOST
+  APP_REMOVED_SUSPECTED
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  phone        String    @unique @map("phone_e164")
+  name         String?
+  locale       String    @default("uz")
+  pushToken    String?   @map("push_token")
+  pushPlatform Platform? @map("push_platform")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  memberships     FamilyMember[]
+  refreshTokens   RefreshToken[]
+  pairingCodes    PairingCode[]
+  decidedRequests PairingRequest[]
+  policies        Policy[]
+  commands        Command[]
+
+  @@map("users")
+}
+
+model OtpChallenge {
+  id         String    @id @default(uuid()) @db.Uuid
+  phone      String    @map("phone_e164")
+  codeHash   String    @map("code_hash")
+  attempts   Int       @default(0)
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(3)
+  consumedAt DateTime? @map("consumed_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([phone, createdAt])
+  @@map("otp_challenges")
+}
+
+model Family {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  members         FamilyMember[]
+  children        Child[]
+  pairingCodes    PairingCode[]
+  pairingRequests PairingRequest[]
+  alerts          Alert[]
+
+  @@map("families")
+}
+
+model FamilyMember {
+  familyId  String     @map("family_id") @db.Uuid
+  userId    String     @map("user_id") @db.Uuid
+  role      FamilyRole
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([familyId, userId])
+  @@index([userId])
+  @@map("family_members")
+}
+
+model Child {
+  id                   String   @id @default(uuid()) @db.Uuid
+  familyId             String   @map("family_id") @db.Uuid
+  name                 String
+  birthYear            Int?     @map("birth_year")
+  currentPolicyVersion Int      @default(1) @map("current_policy_version")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  family          Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  devices         Device[]
+  policies        Policy[]
+  pairingCodes    PairingCode[]
+  pairingRequests PairingRequest[]
+  alerts          Alert[]
+
+  @@index([familyId])
+  @@map("children")
+}
+
+model Device {
+  id                     String       @id @default(uuid()) @db.Uuid
+  childId                String       @map("child_id") @db.Uuid
+  platform               Platform
+  model                  String
+  osVersion              String       @map("os_version")
+  appVersion             String       @map("app_version")
+  deviceName             String?      @map("device_name")
+  pushToken              String?      @map("push_token")
+  permissionStatus       Json         @default("{}") @map("permission_status")
+  appliedPolicyVersion   Int?         @map("applied_policy_version")
+  enforcementActive      Boolean      @default(false) @map("enforcement_active")
+  batteryLevel           Int?         @map("battery_level")
+  status                 DeviceStatus @default(active)
+  lastHeartbeatAt        DateTime?    @map("last_heartbeat_at") @db.Timestamptz(3)
+  /// Set when a HEARTBEAT_LOST alert was raised; cleared on the next heartbeat.
+  heartbeatLostAlertedAt DateTime?    @map("heartbeat_lost_alerted_at") @db.Timestamptz(3)
+  createdAt              DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  child          Child           @relation(fields: [childId], references: [id], onDelete: Cascade)
+  pairingRequest PairingRequest?
+  commands       Command[]
+  installedApps  InstalledApp[]
+  usageLogs      UsageLog[]
+  alerts         Alert[]
+  refreshTokens  RefreshToken[]
+
+  @@index([childId])
+  @@index([status, lastHeartbeatAt])
+  @@map("devices")
+}
+
+model PairingCode {
+  id          String    @id @default(uuid()) @db.Uuid
+  familyId    String    @map("family_id") @db.Uuid
+  childId     String?   @map("child_id") @db.Uuid
+  codeHash    String    @map("code_hash")
+  createdById String    @map("created_by_id") @db.Uuid
+  expiresAt   DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt   DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  family    Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  child     Child?           @relation(fields: [childId], references: [id], onDelete: Cascade)
+  createdBy User             @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  requests  PairingRequest[]
+
+  @@index([codeHash, expiresAt])
+  @@map("pairing_codes")
+}
+
+model PairingRequest {
+  id              String               @id @default(uuid()) @db.Uuid
+  /// Null when a phone-method request targets an unknown phone (kept to resist enumeration).
+  familyId        String?              @map("family_id") @db.Uuid
+  pairingCodeId   String?              @map("pairing_code_id") @db.Uuid
+  childId         String?              @map("child_id") @db.Uuid
+  method          PairingMethod
+  claimSecretHash String               @map("claim_secret_hash")
+  deviceInfo      Json                 @map("device_info")
+  status          PairingRequestStatus @default(pending)
+  decidedById     String?              @map("decided_by_id") @db.Uuid
+  decidedAt       DateTime?            @map("decided_at") @db.Timestamptz(3)
+  deviceId        String?              @unique @map("device_id") @db.Uuid
+  claimedAt       DateTime?            @map("claimed_at") @db.Timestamptz(3)
+  requesterIp     String?              @map("requester_ip")
+  expiresAt       DateTime             @map("expires_at") @db.Timestamptz(3)
+  createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  family      Family?      @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  pairingCode PairingCode? @relation(fields: [pairingCodeId], references: [id], onDelete: SetNull)
+  child       Child?       @relation(fields: [childId], references: [id], onDelete: SetNull)
+  decidedBy   User?        @relation(fields: [decidedById], references: [id], onDelete: SetNull)
+  device      Device?      @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  @@index([familyId, status])
+  @@map("pairing_requests")
+}
+
+model Policy {
+  id          String   @id @default(uuid()) @db.Uuid
+  childId     String   @map("child_id") @db.Uuid
+  version     Int
+  document    Json
+  /// Null for the default policy created with the child.
+  createdById String?  @map("created_by_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  child     Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([childId, version])
+  @@map("policies")
+}
+
+model Command {
+  id          String        @id @default(uuid()) @db.Uuid
+  deviceId    String        @map("device_id") @db.Uuid
+  type        CommandType
+  payload     Json          @default("{}")
+  status      CommandStatus @default(pending)
+  error       String?
+  createdById String?       @map("created_by_id") @db.Uuid
+  expiresAt   DateTime      @map("expires_at") @db.Timestamptz(3)
+  deliveredAt DateTime?     @map("delivered_at") @db.Timestamptz(3)
+  ackedAt     DateTime?     @map("acked_at") @db.Timestamptz(3)
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  device    Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  createdBy User?  @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([deviceId, status])
+  @@map("commands")
+}
+
+model InstalledApp {
+  deviceId  String   @map("device_id") @db.Uuid
+  appId     String   @map("app_id")
+  label     String
+  isSystem  Boolean  @map("is_system")
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@id([deviceId, appId])
+  @@map("installed_apps")
+}
+
+model UsageLog {
+  id                String   @id @default(uuid()) @db.Uuid
+  deviceId          String   @map("device_id") @db.Uuid
+  day               DateTime @db.Date
+  appId             String   @map("app_id")
+  foregroundSeconds Int      @map("foreground_seconds")
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@unique([deviceId, day, appId])
+  @@map("usage_logs")
+}
+
+model Alert {
+  id        String    @id @default(uuid()) @db.Uuid
+  familyId  String    @map("family_id") @db.Uuid
+  childId   String    @map("child_id") @db.Uuid
+  deviceId  String    @map("device_id") @db.Uuid
+  type      AlertType
+  details   Json      @default("{}")
+  readAt    DateTime? @map("read_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  child  Child  @relation(fields: [childId], references: [id], onDelete: Cascade)
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([familyId, createdAt])
+  @@map("alerts")
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  /// Exactly one of userId / deviceId is set (enforced in code and by a CHECK constraint).
+  userId     String?   @map("user_id") @db.Uuid
+  deviceId   String?   @map("device_id") @db.Uuid
+  tokenHash  String    @unique @map("token_hash")
+  /// All tokens produced by rotating one login share a chain; reuse revokes the chain.
+  chainId    String    @map("chain_id") @db.Uuid
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(3)
+  rotatedAt  DateTime? @map("rotated_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device Device? @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([chainId])
+  @@index([userId])
+  @@index([deviceId])
+  @@map("refresh_tokens")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorType  String   @map("actor_type")
+  actorId    String?  @map("actor_id")
+  action     String
+  familyId   String?  @map("family_id") @db.Uuid
+  targetType String?  @map("target_type")
+  targetId   String?  @map("target_id")
+  meta       Json     @default("{}")
+  ip         String?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([familyId, createdAt])
+  @@index([actorType, actorId])
+  @@map("audit_logs")
+}
