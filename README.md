@@ -52,6 +52,8 @@ The app uses native modules, so it runs as a development build (not Expo Go).
 pnpm --filter @safekid/shared build
 cd apps/mobile
 pnpm android        # prebuild + build + install the dev client on a device/emulator
+# low on disk? build only for 64-bit phones:
+# (cd android && ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a)
 pnpm start          # Metro for the installed dev client
 ```
 

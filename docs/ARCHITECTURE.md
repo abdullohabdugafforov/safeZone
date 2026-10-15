@@ -286,12 +286,12 @@ sequenceDiagram
 ```
 
 - Commands are for **one-off actions**: `SYNC_NOW`, `REPORT_APPS`, `REFRESH_PERMISSIONS`, later `RING`, etc. Each has `expires_at`; unacked expired commands become `expired`.
-- Fallbacks if FCM is delayed: device syncs on every heartbeat (15 min) and on app/service start. Heartbeat response includes `latestPolicyVersion` and `hasPendingCommands`.
+- Fallbacks if FCM is delayed: device syncs on every heartbeat and on app/service start (Phase 1 polls every 60 s until FCM is configured). Heartbeat response includes `latestPolicyVersion` and `hasPendingCommands`.
 - In dev, `ConsolePushProvider` logs messages; devices also hold a WebSocket while the app is foregrounded.
 
 ## 6. Heartbeat & tamper detection
 
-- Device sends `POST /v1/device/heartbeat` every 15 min (foreground service + WorkManager backup) with `appliedPolicyVersion`, `permissionStatus`, battery level, app version.
+- Device sends `POST /v1/device/heartbeat` from the foreground service (every 60 s while FCM is not configured, see ADR 0002) with `appliedPolicyVersion`, `permissionStatus`, battery level, app version.
 - Backend watchdog job: no heartbeat > 45 min → alert `HEARTBEAT_LOST`.
 - Device-reported alerts: `PERMISSION_REVOKED` (accessibility/usage/admin/overlay turned off), `DEVICE_ADMIN_DISABLE_REQUESTED`, `TIME_CHANGED`, `SAFE_MODE_SUSPECTED` (later).
 - App removal: inferred from heartbeat loss + FCM token becoming invalid → `APP_REMOVED_SUSPECTED`.

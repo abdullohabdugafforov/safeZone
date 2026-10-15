@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="safekid_accessibility_label">SafeKid himoyasi</string>
+  <string name="safekid_accessibility_description">SafeKid ota-onangiz ruxsat bermagan ilovalarni bloklashi va qulf ekranini ko‘rsatishi uchun qaysi ilova ochilganini aniqlaydi. SafeKid ekran tarkibini, yozilgan matn va xabarlarni o‘qimaydi.</string>
+  <string name="safekid_device_admin_explanation">SafeKid’ni ota-onangizdan bexabar o‘chirib tashlashning oldini oladi.</string>
+  <string name="safekid_device_admin_disable_warning">SafeKid himoyasi o‘chirilgani haqida ota-onangizga xabar boradi.</string>
+  <string name="safekid_channel_name">Himoya</string>
+  <string name="safekid_notification_title">SafeKid bu telefonni himoya qilmoqda</string>
+  <string name="safekid_notification_text">Ota-onangiz o‘rnatgan qoidalar faol.</string>
+  <string name="safekid_blocked_title">Bu ilovaga ruxsat yo‘q</string>
+  <string name="safekid_blocked_body">Kerak bo‘lsa, ota-onangizdan so‘rang.</string>
+  <string name="safekid_locked_title">Telefon qulflangan</string>
+  <string name="safekid_locked_body">Ota-onangiz bu telefonni qulflagan. Qo‘ng‘iroqlar ishlaydi.</string>
+  <string name="safekid_go_home">Bosh ekranga</string>
+</resources>

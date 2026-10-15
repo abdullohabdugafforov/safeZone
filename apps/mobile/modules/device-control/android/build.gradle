@@ -1,0 +1,25 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'uz.safekid'
+version = '0.1.0'
+
+android {
+  namespace "uz.safekid.devicecontrol"
+  defaultConfig {
+    versionCode 1
+    versionName '0.1.0'
+  }
+  testOptions {
+    unitTests.returnDefaultValues = true
+  }
+}
+
+dependencies {
+  implementation "androidx.core:core-ktx:1.13.1"
+  testImplementation 'junit:junit:4.13.2'
+  // Real org.json for JVM unit tests (Android's is a stub there).
+  testImplementation 'org.json:json:20240303'
+}

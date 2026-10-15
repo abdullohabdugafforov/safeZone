@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="safekid_accessibility_label">SafeKid protection</string>
+  <string name="safekid_accessibility_description">Detects which app is opened so SafeKid can block apps your parent has not allowed and show the lock screen. SafeKid does not read screen content, typed text or messages.</string>
+  <string name="safekid_device_admin_explanation">Prevents SafeKid from being removed without your parent knowing.</string>
+  <string name="safekid_device_admin_disable_warning">Your parent will be notified that SafeKid protection was turned off.</string>
+  <string name="safekid_channel_name">Protection</string>
+  <string name="safekid_notification_title">SafeKid is protecting this phone</string>
+  <string name="safekid_notification_text">Rules set by your parent are active.</string>
+  <string name="safekid_blocked_title">This app is not allowed</string>
+  <string name="safekid_blocked_body">Ask your parent if you need it.</string>
+  <string name="safekid_locked_title">Phone is locked</string>
+  <string name="safekid_locked_body">Your parent has locked this phone. Calls still work.</string>
+  <string name="safekid_go_home">Go to home screen</string>
+</resources>

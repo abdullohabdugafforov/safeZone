@@ -1,0 +1,72 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools">
+
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <!-- Usage stats for daily limits (phase 2); granted by the user in settings. -->
+  <uses-permission
+    android:name="android.permission.PACKAGE_USAGE_STATS"
+    tools:ignore="ProtectedPermissions" />
+
+  <!-- Launchable apps only, instead of QUERY_ALL_PACKAGES. -->
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.MAIN" />
+      <category android:name="android.intent.category.LAUNCHER" />
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.MAIN" />
+      <category android:name="android.intent.category.HOME" />
+    </intent>
+  </queries>
+
+  <application>
+    <service
+      android:name="uz.safekid.devicecontrol.EnforcementAccessibilityService"
+      android:exported="false"
+      android:label="@string/safekid_accessibility_label"
+      android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+      <intent-filter>
+        <action android:name="android.accessibilityservice.AccessibilityService" />
+      </intent-filter>
+      <meta-data
+        android:name="android.accessibilityservice"
+        android:resource="@xml/safekid_accessibility_config" />
+    </service>
+
+    <service
+      android:name="uz.safekid.devicecontrol.EnforcementService"
+      android:exported="false"
+      android:foregroundServiceType="specialUse">
+      <property
+        android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+        android:value="parental_control_enforcement" />
+    </service>
+
+    <receiver
+      android:name="uz.safekid.devicecontrol.SafeKidDeviceAdminReceiver"
+      android:exported="true"
+      android:permission="android.permission.BIND_DEVICE_ADMIN">
+      <meta-data
+        android:name="android.app.device_admin"
+        android:resource="@xml/safekid_device_admin" />
+      <intent-filter>
+        <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+        <action android:name="android.app.action.DEVICE_ADMIN_DISABLE_REQUESTED" />
+        <action android:name="android.app.action.DEVICE_ADMIN_DISABLED" />
+      </intent-filter>
+    </receiver>
+
+    <receiver
+      android:name="uz.safekid.devicecontrol.BootReceiver"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+      </intent-filter>
+    </receiver>
+  </application>
+</manifest>

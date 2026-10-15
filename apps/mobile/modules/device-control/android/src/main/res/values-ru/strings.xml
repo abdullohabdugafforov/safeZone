@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="safekid_accessibility_label">Защита SafeKid</string>
+  <string name="safekid_accessibility_description">Определяет, какое приложение открыто, чтобы SafeKid мог блокировать приложения, не разрешённые родителем, и показывать экран блокировки. SafeKid не читает содержимое экрана, вводимый текст и сообщения.</string>
+  <string name="safekid_device_admin_explanation">Не позволяет удалить SafeKid без ведома родителя.</string>
+  <string name="safekid_device_admin_disable_warning">Родитель получит уведомление об отключении защиты SafeKid.</string>
+  <string name="safekid_channel_name">Защита</string>
+  <string name="safekid_notification_title">SafeKid защищает этот телефон</string>
+  <string name="safekid_notification_text">Правила родителя действуют.</string>
+  <string name="safekid_blocked_title">Это приложение не разрешено</string>
+  <string name="safekid_blocked_body">Спросите у родителя, если оно вам нужно.</string>
+  <string name="safekid_locked_title">Телефон заблокирован</string>
+  <string name="safekid_locked_body">Родитель заблокировал этот телефон. Звонки работают.</string>
+  <string name="safekid_go_home">На главный экран</string>
+</resources>
