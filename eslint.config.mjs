@@ -1,6 +1,7 @@
 // Root ESLint flat config shared by all workspaces.
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
+import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
@@ -33,6 +34,22 @@ export default tseslint.config(
     files: ['apps/backend/**/*.ts'],
     languageOptions: {
       parserOptions: { emitDecoratorMetadata: true, experimentalDecorators: true },
+    },
+  },
+  {
+    files: ['apps/mobile/**/*.{ts,tsx}'],
+    plugins: { 'react-hooks': reactHooks },
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+    },
+  },
+  {
+    // CommonJS config files (jest, metro, babel).
+    files: ['**/*.config.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: { module: 'writable', require: 'readonly' },
     },
   },
   prettier,
