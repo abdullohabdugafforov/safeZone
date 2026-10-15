@@ -45,3 +45,19 @@ export const alertSchema = z.object({
   readAt: isoDateTimeSchema.nullable(),
 });
 export type Alert = z.infer<typeof alertSchema>;
+
+export const listAlertsQuerySchema = z.object({
+  childId: idSchema.optional(),
+  unreadOnly: z
+    .enum(['true', 'false'])
+    .transform((value) => value === 'true')
+    .optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  /** Cursor: return alerts created before this time. */
+  before: isoDateTimeSchema.optional(),
+});
+export type ListAlertsQuery = z.infer<typeof listAlertsQuerySchema>;
+
+/** Heartbeat older than this raises HEARTBEAT_LOST. */
+export const HEARTBEAT_INTERVAL_SECONDS = 15 * 60;
+export const HEARTBEAT_LOST_AFTER_SECONDS = 3 * HEARTBEAT_INTERVAL_SECONDS;
