@@ -5,6 +5,7 @@ import { AlertsModule } from './alerts/alerts.module.js';
 
 import { AuditModule } from './audit/audit.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { CommandsModule } from './commands/commands.module.js';
 import { ConfigModule } from './config/config.module.js';
 import { CryptoModule } from './crypto/crypto.module.js';
 import { DevicesModule } from './devices/devices.module.js';
@@ -13,10 +14,12 @@ import { FamiliesModule } from './families/families.module.js';
 import { HealthModule } from './health/health.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { PairingModule } from './pairing/pairing.module.js';
+import { PoliciesModule } from './policies/policies.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { RateLimitModule } from './rate-limit/rate-limit.module.js';
 import { RedisModule } from './redis/redis.module.js';
 import { SmsModule } from './sms/sms.module.js';
+import { SyncModule } from './sync/sync.module.js';
 import { UsersModule } from './users/users.module.js';
 
 @Module({})
@@ -41,6 +44,9 @@ export class AppModule {
         PairingModule,
         AlertsModule,
         DevicesModule,
+        PoliciesModule,
+        CommandsModule,
+        SyncModule,
         HealthModule,
       ],
     };
