@@ -7,6 +7,7 @@ import {
   Lock,
   LockOpen,
   Plus,
+  ShieldWarning,
   Timer,
   Trash,
   WarningCircle,
@@ -15,8 +16,9 @@ import { useTranslation } from 'react-i18next';
 import { Alert, StyleSheet, View } from 'react-native';
 
 import { parentApi, queryKeys } from '@/api/parent';
-import { useDevices, usePolicy } from '@/api/parent-hooks';
+import { useDevices, usePolicy, useUnreadAlerts } from '@/api/parent-hooks';
 import { errorMessage } from '@/i18n';
+import { alertText } from '@/lib/alerts';
 import { clockTime, isOnline, timeAgo } from '@/lib/time';
 import {
   AppText,
@@ -45,6 +47,8 @@ export default function ChildDetail() {
   });
   const policy = usePolicy(childId);
   const devices = useDevices(childId);
+  const unread = useUnreadAlerts();
+  const childAlerts = unread.data?.filter((a) => a.childId === childId) ?? [];
 
   const setLock = useMutation({
     mutationFn: (action: 'lock' | 'lock1h' | 'unlock') =>
@@ -95,6 +99,16 @@ export default function ChildDetail() {
       onRefresh={() => (void policy.refetch(), void devices.refetch())}
     >
       <AppText variant="display">{child.data.name}</AppText>
+
+      {childAlerts.length > 0 ? (
+        <ListItem
+          icon={ShieldWarning}
+          tone="danger"
+          title={t('alerts.newCount', { count: childAlerts.length })}
+          subtitle={alertText(childAlerts[0]!, child.data.name, t)}
+          onPress={() => router.push('/(parent)/alerts')}
+        />
+      ) : null}
 
       <Card style={[styles.status, { backgroundColor: lockActive ? theme.hero : theme.surface }]}>
         <Row>
@@ -201,6 +215,9 @@ function DeviceCard({
   const theme = useTheme();
   const queryClient = useQueryClient();
   const online = isOnline(device.lastHeartbeatAt);
+  // Silent for over 10 minutes: the phone is off/offline or protection was removed.
+  const stale =
+    !!device.lastHeartbeatAt && Date.now() - Date.parse(device.lastHeartbeatAt) > 10 * 60_000;
   const missingPermissions = REQUIRED_PERMISSIONS.some(
     (p) => device.permissionStatus[p] !== 'granted',
   );
@@ -225,7 +242,7 @@ function DeviceCard({
           <AppText variant="label" numberOfLines={1}>
             {device.deviceName ?? device.model}
           </AppText>
-          <AppText variant="muted">
+          <AppText variant="muted" style={stale ? { color: theme.danger } : undefined}>
             {online
               ? t('child.online')
               : device.lastHeartbeatAt

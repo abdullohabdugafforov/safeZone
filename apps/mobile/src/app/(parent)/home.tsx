@@ -1,12 +1,18 @@
 import type { Child } from '@safekid/shared';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Bell, GearSix, Plus, Smiley } from 'phosphor-react-native';
+import { Bell, GearSix, Plus, ShieldWarning, Smiley } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { parentApi, queryKeys } from '@/api/parent';
-import { useChildren, useFamily, usePendingRequests, usePolicy } from '@/api/parent-hooks';
+import {
+  useChildren,
+  useFamily,
+  usePendingRequests,
+  usePolicy,
+  useUnreadAlerts,
+} from '@/api/parent-hooks';
 import { errorMessage } from '@/i18n';
 import {
   AppText,
@@ -31,6 +37,7 @@ export default function ParentHome() {
   } = useFamily();
   const children = useChildren(family?.id);
   const requests = usePendingRequests();
+  const unread = useUnreadAlerts();
 
   if (familyLoading) return <Loading />;
 
@@ -38,12 +45,14 @@ export default function ParentHome() {
     void refetchFamily();
     void children.refetch();
     void requests.refetch();
+    void unread.refetch();
   };
 
   return (
     <Screen refreshing={children.isRefetching} onRefresh={refresh}>
       <Hero title={t('parentHome.title')}>
         <Row style={styles.heroActions}>
+          <AlertsButton count={unread.data?.length ?? 0} />
           <SettingsButton />
         </Row>
       </Hero>
@@ -53,6 +62,15 @@ export default function ParentHome() {
           <AppText variant="error">{errorMessage(familyError ?? children.error)}</AppText>
           <Button title={t('common.retry')} variant="secondary" onPress={refresh} />
         </Card>
+      ) : null}
+
+      {unread.data && unread.data.length > 0 ? (
+        <ListItem
+          icon={ShieldWarning}
+          tone="danger"
+          title={t('alerts.newCount', { count: unread.data.length })}
+          onPress={() => router.push('/(parent)/alerts')}
+        />
       ) : null}
 
       {requests.data && requests.data.length > 0 ? (
@@ -81,6 +99,26 @@ export default function ParentHome() {
         onPress={() => router.push('/(parent)/add-child')}
       />
     </Screen>
+  );
+}
+
+function AlertsButton({ count }: { count: number }) {
+  const { t } = useTranslation();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={t('alerts.title')}
+      onPress={() => router.push('/(parent)/alerts')}
+      hitSlop={12}
+      style={styles.settings}
+    >
+      <Bell size={22} color={palette.cyan} weight={count > 0 ? 'fill' : 'regular'} />
+      {count > 0 ? (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{count > 9 ? '9+' : count}</Text>
+        </View>
+      ) : null}
+    </Pressable>
   );
 }
 
@@ -124,7 +162,20 @@ function ChildCard({ child }: { child: Child }) {
 }
 
 const styles = StyleSheet.create({
-  heroActions: { position: 'absolute', top: 16, right: 16 },
+  heroActions: { position: 'absolute', top: 16, right: 16, gap: 8 },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 4,
+    backgroundColor: '#D92D20',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: { color: '#FFFFFF', fontSize: 11, fontFamily: 'Onest_700Bold' },
   settings: {
     width: 40,
     height: 40,

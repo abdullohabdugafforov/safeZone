@@ -19,7 +19,7 @@ describe('time helpers', () => {
 
   it('detects online devices', () => {
     expect(isOnline(null, now)).toBe(false);
-    expect(isOnline('2026-10-15T11:50:00Z', now)).toBe(true);
-    expect(isOnline('2026-10-15T11:30:00Z', now)).toBe(false);
+    expect(isOnline('2026-10-15T11:58:30Z', now)).toBe(true);
+    expect(isOnline('2026-10-15T11:50:00Z', now)).toBe(false);
   });
 });

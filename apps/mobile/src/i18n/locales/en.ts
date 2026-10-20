@@ -204,6 +204,29 @@ const en = {
     unlinked: 'This phone has been unlinked by your parent.',
     notAvailable: 'Protection is not available in this build.',
   },
+  alerts: {
+    title: 'Alerts',
+    empty: 'No alerts. Everything looks fine.',
+    newCount_one: '{{count}} new alert',
+    newCount_other: '{{count}} new alerts',
+    type: {
+      PERMISSION_REVOKED: '{{child}}: a protection permission was turned off ({{permission}})',
+      ENFORCEMENT_STOPPED: '{{child}}: app blocking stopped working on the phone',
+      DEVICE_ADMIN_DISABLE_REQUESTED: '{{child}} tried to turn off uninstall protection',
+      DEVICE_ADMIN_DISABLED: '{{child}}: uninstall protection was turned off',
+      TAMPER_ATTEMPT: '{{child}} tried to open {{target}}. It was blocked.',
+      TIME_CHANGED: '{{child}}: the phone clock was changed',
+      HEARTBEAT_LOST:
+        'No contact with {{child}}’s phone. It may be off, offline, or SafeKid was removed.',
+      APP_REMOVED_SUSPECTED: 'SafeKid may have been removed from {{child}}’s phone',
+    },
+    target: {
+      uninstall: 'the uninstall screen',
+      device_admin: 'device admin settings',
+      accessibility_settings: 'accessibility settings',
+      app_settings: 'SafeKid app settings',
+    },
+  },
   time: {
     justNow: 'just now',
     minutesAgo: '{{count}} min ago',

@@ -208,6 +208,29 @@ const uz: Translation = {
     unlinked: 'Bu telefon ota-onangiz tomonidan uzildi.',
     notAvailable: 'Bu build’da himoya mavjud emas.',
   },
+  alerts: {
+    title: 'Ogohlantirishlar',
+    empty: 'Ogohlantirishlar yo‘q. Hammasi joyida.',
+    newCount_one: '{{count}} ta yangi ogohlantirish',
+    newCount_other: '{{count}} ta yangi ogohlantirish',
+    type: {
+      PERMISSION_REVOKED: '{{child}}: himoya ruxsati o‘chirildi ({{permission}})',
+      ENFORCEMENT_STOPPED: '{{child}}: telefonda ilovalarni bloklash to‘xtadi',
+      DEVICE_ADMIN_DISABLE_REQUESTED: '{{child}} o‘chirishdan himoyani o‘chirmoqchi bo‘ldi',
+      DEVICE_ADMIN_DISABLED: '{{child}}: o‘chirishdan himoya o‘chirildi',
+      TAMPER_ATTEMPT: '{{child}} {{target}}ni ochmoqchi bo‘ldi. Bloklandi.',
+      TIME_CHANGED: '{{child}}: telefon soati o‘zgartirildi',
+      HEARTBEAT_LOST:
+        '{{child}}ning telefoni bilan aloqa yo‘q. U o‘chiq, internetsiz yoki SafeKid o‘chirilgan bo‘lishi mumkin.',
+      APP_REMOVED_SUSPECTED: '{{child}}ning telefonidan SafeKid o‘chirilgan bo‘lishi mumkin',
+    },
+    target: {
+      uninstall: 'ilovani o‘chirish oynasi',
+      device_admin: 'administrator sozlamalari',
+      accessibility_settings: 'maxsus imkoniyatlar sozlamalari',
+      app_settings: 'SafeKid ilova sozlamalari',
+    },
+  },
   time: {
     justNow: 'hozirgina',
     minutesAgo: '{{count}} daqiqa oldin',

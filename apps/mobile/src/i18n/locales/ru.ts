@@ -207,6 +207,29 @@ const ru: Translation = {
     unlinked: 'Родитель отвязал этот телефон.',
     notAvailable: 'В этой сборке защита недоступна.',
   },
+  alerts: {
+    title: 'Уведомления',
+    empty: 'Уведомлений нет. Всё в порядке.',
+    newCount_one: '{{count}} новое уведомление',
+    newCount_other: 'Новых уведомлений: {{count}}',
+    type: {
+      PERMISSION_REVOKED: '{{child}}: отключено разрешение защиты ({{permission}})',
+      ENFORCEMENT_STOPPED: '{{child}}: блокировка приложений на телефоне перестала работать',
+      DEVICE_ADMIN_DISABLE_REQUESTED: '{{child}} пытался отключить защиту от удаления',
+      DEVICE_ADMIN_DISABLED: '{{child}}: защита от удаления отключена',
+      TAMPER_ATTEMPT: '{{child}} пытался открыть {{target}}. Заблокировано.',
+      TIME_CHANGED: '{{child}}: изменено время на телефоне',
+      HEARTBEAT_LOST:
+        'Нет связи с телефоном ({{child}}). Он выключен, без интернета или SafeKid удалён.',
+      APP_REMOVED_SUSPECTED: 'Возможно, SafeKid удалён с телефона ({{child}})',
+    },
+    target: {
+      uninstall: 'экран удаления приложения',
+      device_admin: 'настройки администратора',
+      accessibility_settings: 'настройки спецвозможностей',
+      app_settings: 'настройки приложения SafeKid',
+    },
+  },
   time: {
     justNow: 'только что',
     minutesAgo: '{{count}} мин назад',

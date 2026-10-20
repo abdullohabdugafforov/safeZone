@@ -84,7 +84,11 @@ export const parentApi = {
   unlock: (childId: string) =>
     api.post(`/children/${childId}/unlock`, { auth, schema: policyEnvelopeSchema }),
 
-  alerts: () => api.get('/alerts', { auth, schema: z.array(alertSchema) }),
+  alerts: (unreadOnly = false) =>
+    api.get(`/alerts${unreadOnly ? '?unreadOnly=true' : ''}`, {
+      auth,
+      schema: z.array(alertSchema),
+    }),
   markAlertRead: (alertId: string) => api.post(`/alerts/${alertId}/read`, { auth }),
 };
 
@@ -97,4 +101,5 @@ export const queryKeys = {
   policy: (childId: string) => ['policy', childId] as const,
   pairingRequests: ['pairingRequests'] as const,
   alerts: ['alerts'] as const,
+  unreadAlerts: ['alerts', 'unread'] as const,
 };

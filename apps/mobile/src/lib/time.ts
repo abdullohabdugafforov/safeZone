@@ -22,7 +22,7 @@ export function countdown(msLeft: number): string {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 }
 
-/** Device counts as online if it sent a heartbeat within ~1.5 heartbeat intervals. */
+/** Devices heartbeat about every minute; online = heard from within 3 minutes. */
 export function isOnline(lastHeartbeatAt: string | null, now = Date.now()): boolean {
-  return lastHeartbeatAt !== null && now - Date.parse(lastHeartbeatAt) < 20 * 60_000;
+  return lastHeartbeatAt !== null && now - Date.parse(lastHeartbeatAt) < 3 * 60_000;
 }

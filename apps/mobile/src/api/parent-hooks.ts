@@ -38,3 +38,12 @@ export function useDevices(childId: string) {
     refetchInterval: 30_000,
   });
 }
+
+/** Unread tamper/security alerts, polled so the parent notices without push. */
+export function useUnreadAlerts() {
+  return useQuery({
+    queryKey: queryKeys.unreadAlerts,
+    queryFn: () => parentApi.alerts(true),
+    refetchInterval: 30_000,
+  });
+}
