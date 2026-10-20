@@ -7,6 +7,7 @@ import {
   ChartBar,
   CheckCircle,
   Eye,
+  GearSix,
   Lock,
   ShieldCheck,
   type Icon,
@@ -130,6 +131,19 @@ export default function PermissionsWizard() {
           title={t('wizard.allow')}
           onPress={() => void DeviceControl.requestPermission(permission)}
         />
+      ) : null}
+      {!granted && (permission === 'accessibility' || permission === 'batteryOptimization') ? (
+        <Card tone="yellow">
+          <AppText style={{ color: theme.text }}>
+            {permission === 'accessibility' ? t('wizard.restrictedHelp') : t('wizard.oemHelp')}
+          </AppText>
+          <Button
+            title={t('wizard.openAppSettings')}
+            icon={GearSix}
+            variant="secondary"
+            onPress={() => void DeviceControl.openAppSettings()}
+          />
+        </Card>
       ) : null}
       <Button
         title={last ? t('wizard.finish') : t('wizard.next')}

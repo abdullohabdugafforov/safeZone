@@ -55,6 +55,8 @@ export interface DeviceControlApi {
   getPermissionStatus(): Promise<PermissionStatus>;
   /** Opens the system flow for the permission. Resolves when the flow was launched, not granted. */
   requestPermission(permission: PermissionKind): Promise<void>;
+  /** Opens this app's page in system settings (restricted settings, OEM background toggles). */
+  openAppSettings(): Promise<void>;
 
   setDeviceCredentials(credentials: DeviceCredentials): Promise<void>;
   clearDeviceCredentials(): Promise<void>;

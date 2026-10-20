@@ -32,6 +32,7 @@ export const DeviceControl: DeviceControlApi = {
     },
   getPermissionStatus: async () => (native ? native.getPermissionStatus() : {}),
   requestPermission: (permission) => requireNative().requestPermission(permission),
+  openAppSettings: () => requireNative().openAppSettings(),
   setDeviceCredentials: (credentials) => requireNative().setDeviceCredentials(credentials),
   clearDeviceCredentials: async () => native?.clearDeviceCredentials(),
   getAccessToken: async () => (native ? native.getAccessToken() : null),

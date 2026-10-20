@@ -2,6 +2,8 @@ package uz.safekid.devicecontrol
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import expo.modules.kotlin.exception.Exceptions
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -57,6 +59,14 @@ class DeviceControlModule : Module() {
       }
     }
 
+    // App's system settings page: needed for "Allow restricted settings" (Android 13+,
+    // apps installed outside a store) and OEM autostart/background toggles.
+    AsyncFunction("openAppSettings") {
+      val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}"))
+      val activity = appContext.currentActivity
+      if (activity != null) activity.startActivity(intent) else context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+
     AsyncFunction("setDeviceCredentials") { creds: Map<String, Any?> ->
       session.store.saveCredentials(
         Credentials(
@@ -94,7 +104,7 @@ class DeviceControlModule : Module() {
 
     AsyncFunction("getStatus") {
       mapOf(
-        "running" to session.isLinked,
+        "running" to (session.isLinked && EnforcementService.isRunning),
         "appliedPolicyVersion" to session.store.appliedPolicyVersion(),
         "permissions" to Permissions.status(context),
       )

@@ -150,6 +150,11 @@ const uz: Translation = {
     whatTitle: 'SafeKid bundan nima uchun foydalanadi',
     dataTitle: 'Ma’lumotlaringiz',
     unavailable: 'Bu telefonda qo‘llab-quvvatlanmaydi',
+    restrictedHelp:
+      'Tugma kulrang yoki «Cheklangan sozlama» deb chiqyaptimi? Ilova sozlamalarini oching, o‘ng yuqoridagi ⋮ → «Cheklangan sozlamalarga ruxsat berish»ni bosing, keyin qaytib SafeKid’ni yoqing.',
+    oemHelp:
+      'Vivo, Xiaomi, Oppo, Huawei kabi telefonlarda ilova sozlamalarida «Avtostart» / «Fonda ishlash»ga ham ruxsat bering, aks holda telefon himoyani to‘xtatib qo‘yishi mumkin.',
+    openAppSettings: 'Ilova sozlamalarini ochish',
   },
   disclosure: {
     accessibility: {

@@ -146,6 +146,11 @@ const en = {
     whatTitle: 'What SafeKid does with it',
     dataTitle: 'Your data',
     unavailable: 'Not supported on this phone',
+    restrictedHelp:
+      'Switch greyed out or shows "Restricted setting"? Open app settings, tap ⋮ (top right) → "Allow restricted settings", then come back and turn on SafeKid.',
+    oemHelp:
+      'On Vivo, Xiaomi, Oppo, Huawei and similar phones also open app settings and allow "Autostart" / "Background activity", otherwise the phone may stop protection.',
+    openAppSettings: 'Open app settings',
   },
   disclosure: {
     accessibility: {

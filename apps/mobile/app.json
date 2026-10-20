@@ -2,7 +2,7 @@
   "expo": {
     "name": "SafeKid",
     "slug": "safekid",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "scheme": "safekid",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +20,10 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "blockedPermissions": ["android.permission.SYSTEM_ALERT_WINDOW"]
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
+      "versionCode": 2
     },
     "plugins": [
       "expo-router",

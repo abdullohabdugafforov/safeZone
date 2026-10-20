@@ -27,6 +27,14 @@ export default function ChildHome() {
     return () => sub?.remove();
   }, []);
 
+  // Opening the app restarts protection if the OS killed it and pulls the latest policy.
+  useEffect(() => {
+    if (!isDeviceControlAvailable) return;
+    void DeviceControl.startEnforcement()
+      .then(() => DeviceControl.syncNow())
+      .catch(() => undefined);
+  }, []);
+
   if (unlinked) {
     const reset = async () => {
       await DeviceControl.clearDeviceCredentials();

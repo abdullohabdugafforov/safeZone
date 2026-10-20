@@ -27,12 +27,14 @@ class EnforcementService : Service() {
   override fun onBind(intent: Intent?): IBinder? = null
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    isRunning = true
     startInForeground()
     if (scheduler == null) startLoops()
     return START_STICKY
   }
 
   override fun onDestroy() {
+    isRunning = false
     scheduler?.shutdownNow()
     scheduler = null
     super.onDestroy()
@@ -101,9 +103,16 @@ class EnforcementService : Service() {
     private const val NOTIFICATION_ID = 4210
     const val SYNC_POLL_SECONDS = 60L
 
-    fun start(context: Context) {
-      if (!DeviceSession.get(context).isLinked) return
-      ContextCompat.startForegroundService(context, Intent(context, EnforcementService::class.java))
+    /** True while the service is alive in this process (OEMs may kill it). */
+    @Volatile var isRunning = false
+      private set
+
+    /** Returns false if the system refused to start it (e.g. background start limits). */
+    fun start(context: Context): Boolean {
+      if (!DeviceSession.get(context).isLinked) return false
+      return runCatching {
+        ContextCompat.startForegroundService(context, Intent(context, EnforcementService::class.java))
+      }.onFailure { Log.w(TAG, "Could not start enforcement service: ${it.message}") }.isSuccess
     }
 
     fun stop(context: Context) {
