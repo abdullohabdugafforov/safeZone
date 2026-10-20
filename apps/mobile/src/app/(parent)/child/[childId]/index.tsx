@@ -132,9 +132,11 @@ export default function ChildDetail() {
         tone="cyan"
         title={t('child.allowedApps')}
         subtitle={
-          policy.data.document.mode === 'allowlist'
-            ? t('child.modeAllowlist', { count: policy.data.document.allowedApps.length })
-            : t('child.modeUnrestricted')
+          policy.data.document.mode !== 'allowlist'
+            ? t('child.modeUnrestricted')
+            : policy.data.document.allowedApps.length === 0
+              ? t('child.modeAllowlistNone')
+              : t('child.modeAllowlist', { count: policy.data.document.allowedApps.length })
         }
         onPress={() =>
           router.push({ pathname: '/(parent)/child/[childId]/apps', params: { childId } })

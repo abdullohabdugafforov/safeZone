@@ -84,6 +84,7 @@ const en = {
     unlock: 'Unlock',
     allowedApps: 'Allowed apps',
     modeUnrestricted: 'All apps allowed',
+    modeAllowlistNone: 'All apps blocked (none selected)',
     modeAllowlist: 'Only {{count}} selected apps',
     devices: 'Devices',
     linkDevice: 'Link a device',
@@ -104,6 +105,10 @@ const en = {
     systemApps: 'System apps',
     userApps: 'Installed apps',
     saved: 'Saved. The phone will apply it shortly.',
+    blockAllTitle: 'Block all apps?',
+    blockAllBody:
+      'No apps are selected, so every app will be blocked. Only calls, SMS and the home screen will work.',
+    blockAllConfirm: 'Block all',
     conflict:
       'The settings were changed on another device. We loaded the latest version — please review and save again.',
   },

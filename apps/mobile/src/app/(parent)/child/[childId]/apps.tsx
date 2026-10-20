@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { AppWindow, FloppyDisk, ShieldCheck } from 'phosphor-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Switch, View } from 'react-native';
+import { Alert, StyleSheet, Switch, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
 import { parentApi, queryKeys } from '@/api/parent';
@@ -80,6 +80,15 @@ export default function AllowedApps() {
     });
   };
 
+  // Allowlist with nothing selected blocks every app: make the parent confirm it.
+  const confirmSave = () => {
+    if (!allowlist || selected.size > 0) return save.mutate();
+    Alert.alert(t('apps.blockAllTitle'), t('apps.blockAllBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('apps.blockAllConfirm'), style: 'destructive', onPress: () => save.mutate() },
+    ]);
+  };
+
   const switchColors = { false: theme.border, true: theme.primary };
   const userApps = apps.filter((a) => !a.isSystem);
   const systemApps = apps.filter((a) => a.isSystem);
@@ -151,7 +160,7 @@ export default function AllowedApps() {
         title={t('common.save')}
         icon={FloppyDisk}
         loading={save.isPending}
-        onPress={() => save.mutate()}
+        onPress={confirmSave}
       />
     </Screen>
   );

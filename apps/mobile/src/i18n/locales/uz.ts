@@ -87,6 +87,7 @@ const uz: Translation = {
     unlock: 'Qulfni ochish',
     allowedApps: 'Ruxsat etilgan ilovalar',
     modeUnrestricted: 'Barcha ilovalarga ruxsat',
+    modeAllowlistNone: 'Barcha ilovalar bloklangan (hech biri tanlanmagan)',
     modeAllowlist: 'Faqat tanlangan {{count}} ta ilova',
     devices: 'Qurilmalar',
     linkDevice: 'Qurilma ulash',
@@ -107,6 +108,10 @@ const uz: Translation = {
     systemApps: 'Tizim ilovalari',
     userApps: 'O‘rnatilgan ilovalar',
     saved: 'Saqlandi. Telefon tez orada qo‘llaydi.',
+    blockAllTitle: 'Barcha ilovalar bloklansinmi?',
+    blockAllBody:
+      'Birorta ilova tanlanmagan, shuning uchun barcha ilovalar bloklanadi. Faqat qo‘ng‘iroq, SMS va bosh ekran ishlaydi.',
+    blockAllConfirm: 'Hammasini bloklash',
     conflict:
       'Sozlamalar boshqa qurilmada o‘zgartirilgan. Eng so‘nggi versiya yuklandi — tekshirib, qayta saqlang.',
   },
