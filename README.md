@@ -22,6 +22,19 @@ parents control child devices remotely; children link their device to a parent
 - Docker Desktop
 - Android: Android Studio + SDK, JDK 17+, a physical device or emulator
 
+## Quick start (one command)
+
+```bash
+pnpm install
+pnpm dev:all          # Docker DB + backend + Metro for Expo Go (scan the QR)
+pnpm dev:all client   # same, but Metro for the installed development build
+```
+
+It starts Postgres/Redis, creates `apps/backend/.env` with fresh secrets if
+missing, applies migrations, runs the API on :3000 and Metro on :8082. OTP codes
+(dev SMS provider) are printed in the same terminal as `[api] ... SafeKid code`.
+Ctrl+C stops the API and Metro. The phone must be on the same Wi-Fi as the Mac.
+
 ## Setup
 
 ```bash

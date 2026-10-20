@@ -36,3 +36,6 @@ apps/backend/src/generated/
 .vscode/*
 !.vscode/extensions.json
 *.log
+
+# local dev logs
+.dev-logs/
