@@ -2,14 +2,13 @@ import type { PairingRequest } from '@safekid/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-import { useChildren, useFamily, usePendingRequests } from '@/api/parent-hooks';
 import { parentApi } from '@/api/parent';
+import { useChildren, useFamily, usePendingRequests } from '@/api/parent-hooks';
 import { errorMessage } from '@/i18n';
-import { AppText, Row, Screen, TextField } from '@/ui/components';
+import { AppText, Card, Chip, Row, Screen, TextField } from '@/ui/components';
 import { PairingRequestCard } from '@/ui/pairing-request-card';
-import { useTheme } from '@/ui/theme';
 
 const NEW_CHILD = 'new';
 
@@ -19,10 +18,12 @@ export default function Requests() {
   const requests = usePendingRequests(5000);
 
   return (
-    <Screen>
-      <AppText variant="title">{t('requests.title')}</AppText>
+    <Screen back refreshing={requests.isRefetching} onRefresh={() => void requests.refetch()}>
+      <AppText variant="display">{t('requests.title')}</AppText>
       {requests.data?.length === 0 ? (
-        <AppText variant="muted">{t('requests.empty')}</AppText>
+        <Card tone="cyan">
+          <AppText>{t('requests.empty')}</AppText>
+        </Card>
       ) : null}
       {requests.data?.map((request) => (
         <RequestItem key={request.id} request={request} />
@@ -33,7 +34,6 @@ export default function Requests() {
 
 function RequestItem({ request }: { request: PairingRequest }) {
   const { t } = useTranslation();
-  const theme = useTheme();
   const queryClient = useQueryClient();
   const { family } = useFamily();
   const children = useChildren(family?.id);
@@ -57,6 +57,11 @@ function RequestItem({ request }: { request: PairingRequest }) {
     onSuccess: () => queryClient.invalidateQueries(),
   });
 
+  const options = [
+    ...(children.data ?? []).map((c) => ({ id: c.id, name: c.name })),
+    { id: NEW_CHILD, name: t('requests.newChild') },
+  ];
+
   return (
     <PairingRequestCard
       request={request}
@@ -65,29 +70,15 @@ function RequestItem({ request }: { request: PairingRequest }) {
       onApprove={() => decide.mutate(true)}
       onReject={() => decide.mutate(false)}
     >
-      <AppText variant="muted">{t('requests.linkTo')}</AppText>
-      <Row>
-        {[
-          ...(children.data ?? []).map((c) => ({ id: c.id, name: c.name })),
-          { id: NEW_CHILD, name: t('requests.newChild') },
-        ].map((option) => (
-          <Pressable
+      <AppText variant="caption">{t('requests.linkTo')}</AppText>
+      <Row style={styles.wrap}>
+        {options.map((option) => (
+          <Chip
             key={option.id}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: target === option.id }}
+            label={option.name}
+            selected={target === option.id}
             onPress={() => setTarget(option.id)}
-            style={{
-              paddingVertical: 8,
-              paddingHorizontal: 12,
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: target === option.id ? theme.primary : theme.border,
-            }}
-          >
-            <AppText style={{ color: target === option.id ? theme.primary : theme.text }}>
-              {option.name}
-            </AppText>
-          </Pressable>
+          />
         ))}
       </Row>
       {target === NEW_CHILD ? (
@@ -102,3 +93,7 @@ function RequestItem({ request }: { request: PairingRequest }) {
     </PairingRequestCard>
   );
 }
+
+const styles = StyleSheet.create({
+  wrap: { flexWrap: 'wrap' },
+});

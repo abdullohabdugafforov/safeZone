@@ -1,15 +1,36 @@
 import type { Device, PolicyEnvelope } from '@safekid/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
+import {
+  AppWindow,
+  DeviceMobile,
+  Lock,
+  LockOpen,
+  Plus,
+  Timer,
+  Trash,
+  WarningCircle,
+} from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
-import { Alert } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
-import { useDevices, usePolicy } from '@/api/parent-hooks';
 import { parentApi, queryKeys } from '@/api/parent';
+import { useDevices, usePolicy } from '@/api/parent-hooks';
 import { errorMessage } from '@/i18n';
 import { clockTime, isOnline, timeAgo } from '@/lib/time';
-import { AppText, Button, Card, Loading, Row, Screen, Section } from '@/ui/components';
-import { useTheme } from '@/ui/theme';
+import {
+  AppText,
+  Button,
+  Card,
+  IconBadge,
+  ListItem,
+  Loading,
+  Row,
+  Screen,
+  Section,
+  StatusPill,
+} from '@/ui/components';
+import { palette, useTheme } from '@/ui/theme';
 
 const REQUIRED_PERMISSIONS = ['accessibility', 'deviceAdmin'] as const;
 
@@ -48,53 +69,77 @@ export default function ChildDetail() {
       : t('child.lockedIndefinitely');
 
   return (
-    <Screen>
-      <AppText variant="title">{child.data.name}</AppText>
+    <Screen
+      back
+      refreshing={devices.isRefetching}
+      onRefresh={() => (void policy.refetch(), void devices.refetch())}
+    >
+      <AppText variant="display">{child.data.name}</AppText>
 
-      <Section title={t('child.status')}>
-        <Card>
-          <AppText style={{ fontWeight: '600', color: lockActive ? theme.danger : theme.success }}>
-            {statusText}
-          </AppText>
-          {lockActive ? (
+      <Card style={[styles.status, { backgroundColor: lockActive ? theme.hero : theme.surface }]}>
+        <Row>
+          <View
+            style={[
+              styles.statusIcon,
+              { backgroundColor: lockActive ? palette.inkSurface : theme.iconContainer },
+            ]}
+          >
+            {lockActive ? (
+              <Lock size={26} color={palette.cyan} weight="fill" />
+            ) : (
+              <LockOpen size={26} color={theme.icon} />
+            )}
+          </View>
+          <View style={styles.flex}>
+            <AppText variant="caption" style={lockActive ? { color: palette.cyan100 } : undefined}>
+              {t('child.status')}
+            </AppText>
+            <AppText variant="title" style={lockActive ? { color: palette.white } : undefined}>
+              {statusText}
+            </AppText>
+          </View>
+        </Row>
+        {lockActive ? (
+          <Button
+            title={t('child.unlock')}
+            icon={LockOpen}
+            loading={setLock.isPending}
+            onPress={() => setLock.mutate('unlock')}
+          />
+        ) : (
+          <>
             <Button
-              title={t('child.unlock')}
+              title={t('child.lockNow')}
+              icon={Lock}
+              variant="strong"
               loading={setLock.isPending}
-              onPress={() => setLock.mutate('unlock')}
+              onPress={() => setLock.mutate('lock')}
             />
-          ) : (
-            <>
-              <Button
-                title={t('child.lockNow')}
-                variant="danger"
-                loading={setLock.isPending}
-                onPress={() => setLock.mutate('lock')}
-              />
-              <Button
-                title={t('child.lockFor1h')}
-                variant="secondary"
-                disabled={setLock.isPending}
-                onPress={() => setLock.mutate('lock1h')}
-              />
-            </>
-          )}
-          {setLock.error ? <AppText variant="error">{errorMessage(setLock.error)}</AppText> : null}
-        </Card>
-      </Section>
+            <Button
+              title={t('child.lockFor1h')}
+              icon={Timer}
+              variant="secondary"
+              disabled={setLock.isPending}
+              onPress={() => setLock.mutate('lock1h')}
+            />
+          </>
+        )}
+        {setLock.error ? <AppText variant="error">{errorMessage(setLock.error)}</AppText> : null}
+      </Card>
 
-      <Section title={t('child.allowedApps')}>
-        <Card
-          onPress={() =>
-            router.push({ pathname: '/(parent)/child/[childId]/apps', params: { childId } })
-          }
-        >
-          <AppText>
-            {policy.data.document.mode === 'allowlist'
-              ? t('child.modeAllowlist', { count: policy.data.document.allowedApps.length })
-              : t('child.modeUnrestricted')}
-          </AppText>
-        </Card>
-      </Section>
+      <ListItem
+        icon={AppWindow}
+        tone="cyan"
+        title={t('child.allowedApps')}
+        subtitle={
+          policy.data.document.mode === 'allowlist'
+            ? t('child.modeAllowlist', { count: policy.data.document.allowedApps.length })
+            : t('child.modeUnrestricted')
+        }
+        onPress={() =>
+          router.push({ pathname: '/(parent)/child/[childId]/apps', params: { childId } })
+        }
+      />
 
       <Section title={t('child.devices')}>
         {devices.data?.map((device) => (
@@ -102,6 +147,7 @@ export default function ChildDetail() {
         ))}
         <Button
           title={t('child.linkDevice')}
+          icon={Plus}
           variant="secondary"
           onPress={() => router.push({ pathname: '/(parent)/pair/[childId]', params: { childId } })}
         />
@@ -142,29 +188,54 @@ function DeviceCard({
   return (
     <Card>
       <Row>
-        <AppText style={{ flex: 1, fontWeight: '600' }}>
-          {device.deviceName ?? device.model}
-        </AppText>
-        <AppText style={{ color: online ? theme.success : theme.textMuted }}>
-          {online
-            ? t('child.online')
-            : device.lastHeartbeatAt
-              ? t('child.lastSeen', { time: timeAgo(device.lastHeartbeatAt, t) })
-              : t('child.neverSeen')}
-        </AppText>
+        <IconBadge icon={DeviceMobile} size={20} />
+        <View style={styles.flex}>
+          <AppText variant="label" numberOfLines={1}>
+            {device.deviceName ?? device.model}
+          </AppText>
+          <AppText variant="muted">
+            {online
+              ? t('child.online')
+              : device.lastHeartbeatAt
+                ? t('child.lastSeen', { time: timeAgo(device.lastHeartbeatAt, t) })
+                : t('child.neverSeen')}
+          </AppText>
+        </View>
+        <StatusPill
+          tone={online ? 'success' : 'neutral'}
+          label={online ? t('child.online') : '—'}
+        />
       </Row>
       {missingPermissions ? (
-        <AppText style={{ color: theme.danger }}>{t('child.permissionsMissing')}</AppText>
+        <Row>
+          <WarningCircle size={18} color={theme.danger} weight="fill" />
+          <AppText variant="error" style={styles.flex}>
+            {t('child.permissionsMissing')}
+          </AppText>
+        </Row>
       ) : null}
       {syncing && device.lastHeartbeatAt ? (
         <AppText variant="muted">{t('child.syncing')}</AppText>
       ) : null}
       <Button
         title={t('child.unlink')}
-        variant="secondary"
+        icon={Trash}
+        variant="ghost"
         loading={unlink.isPending}
         onPress={confirmUnlink}
       />
     </Card>
   );
 }
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  status: { gap: 12, padding: 20 },
+  statusIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

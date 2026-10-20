@@ -1,12 +1,42 @@
 import type { PermissionKind } from '@safekid/shared';
 import { router } from 'expo-router';
+import {
+  ArrowRight,
+  BatteryCharging,
+  Bell,
+  ChartBar,
+  CheckCircle,
+  Eye,
+  Lock,
+  ShieldCheck,
+  type Icon,
+} from 'phosphor-react-native';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { StyleSheet, View } from 'react-native';
 
-import { DeviceControl, isDeviceControlAvailable } from '@modules/device-control';
 import { useDevicePermissions } from '@/lib/use-device-permissions';
-import { AppText, Button, Card, Screen, Section } from '@/ui/components';
+import {
+  AppText,
+  Button,
+  Card,
+  IconBadge,
+  Row,
+  Screen,
+  Section,
+  StatusPill,
+} from '@/ui/components';
 import { useTheme } from '@/ui/theme';
+import { DeviceControl, isDeviceControlAvailable } from '@modules/device-control';
+
+const PERMISSION_ICONS: Record<PermissionKind, Icon> = {
+  accessibility: Eye,
+  usageAccess: ChartBar,
+  deviceAdmin: ShieldCheck,
+  notifications: Bell,
+  batteryOptimization: BatteryCharging,
+  familyControls: Lock,
+};
 
 /**
  * Step-by-step permission setup. Each step shows a prominent disclosure (what is
@@ -28,8 +58,10 @@ export default function PermissionsWizard() {
   if (!isDeviceControlAvailable || steps.length === 0) {
     return (
       <Screen>
-        <AppText variant="title">{t('wizard.title')}</AppText>
-        <AppText variant="muted">{t('childHome.notAvailable')}</AppText>
+        <AppText variant="display">{t('wizard.title')}</AppText>
+        <Card tone="yellow">
+          <AppText>{t('childHome.notAvailable')}</AppText>
+        </Card>
         <Button title={t('wizard.finish')} onPress={() => router.replace('/(child)/home')} />
       </Screen>
     );
@@ -42,15 +74,32 @@ export default function PermissionsWizard() {
 
   return (
     <Screen>
-      <AppText variant="muted">
+      <View style={styles.progress}>
+        {steps.map((step, i) => (
+          <View
+            key={step}
+            style={[
+              styles.progressStep,
+              { backgroundColor: i <= index ? theme.primary : theme.border },
+            ]}
+          />
+        ))}
+      </View>
+      <AppText variant="caption">
         {t('wizard.progress', { current: index + 1, total: steps.length })}
       </AppText>
-      <AppText variant="title">{t(`disclosure.${permission}.title`)}</AppText>
+
+      <Row>
+        <IconBadge icon={PERMISSION_ICONS[permission]} size={28} filled={granted} />
+        <AppText variant="title" style={styles.flex}>
+          {t(`disclosure.${permission}.title`)}
+        </AppText>
+      </Row>
       {index === 0 ? <AppText variant="muted">{t('wizard.intro')}</AppText> : null}
 
       <Section title={t('wizard.whatTitle')}>
-        <Card>
-          <AppText>{t(`disclosure.${permission}.what`)}</AppText>
+        <Card tone="cyan">
+          <AppText style={{ color: theme.text }}>{t(`disclosure.${permission}.what`)}</AppText>
         </Card>
       </Section>
       <Section title={t('wizard.dataTitle')}>
@@ -62,13 +111,19 @@ export default function PermissionsWizard() {
         </Card>
       </Section>
 
-      <AppText style={{ color: granted ? theme.success : theme.textMuted, fontWeight: '600' }}>
-        {state === 'unavailable'
-          ? t('wizard.unavailable')
-          : granted
-            ? t('wizard.granted')
-            : t('wizard.notGranted')}
-      </AppText>
+      <Row>
+        {granted ? <CheckCircle size={20} color={theme.success} weight="fill" /> : null}
+        <StatusPill
+          tone={granted ? 'success' : state === 'unavailable' ? 'neutral' : 'brand'}
+          label={
+            state === 'unavailable'
+              ? t('wizard.unavailable')
+              : granted
+                ? t('wizard.granted')
+                : t('wizard.notGranted')
+          }
+        />
+      </Row>
 
       {!granted && state !== 'unavailable' ? (
         <Button
@@ -78,9 +133,16 @@ export default function PermissionsWizard() {
       ) : null}
       <Button
         title={last ? t('wizard.finish') : t('wizard.next')}
-        variant={granted ? 'primary' : 'secondary'}
+        icon={ArrowRight}
+        variant={granted ? 'strong' : 'secondary'}
         onPress={() => (last ? void finish() : setIndex(index + 1))}
       />
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  progress: { flexDirection: 'row', gap: 6 },
+  progressStep: { flex: 1, height: 6, borderRadius: 3 },
+});

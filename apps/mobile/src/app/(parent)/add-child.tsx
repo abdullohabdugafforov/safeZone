@@ -1,13 +1,14 @@
 import { createChildBodySchema } from '@safekid/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { ArrowRight, Smiley } from 'phosphor-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useFamily } from '@/api/parent-hooks';
 import { parentApi, queryKeys } from '@/api/parent';
+import { useFamily } from '@/api/parent-hooks';
 import { errorMessage } from '@/i18n';
-import { AppText, Button, Screen, TextField } from '@/ui/components';
+import { AppText, Button, IconBadge, Screen, TextField } from '@/ui/components';
 
 export default function AddChild() {
   const { t } = useTranslation();
@@ -25,8 +26,9 @@ export default function AddChild() {
   });
 
   return (
-    <Screen>
-      <AppText variant="title">{t('addChild.title')}</AppText>
+    <Screen back>
+      <IconBadge icon={Smiley} size={28} />
+      <AppText variant="display">{t('addChild.title')}</AppText>
       <TextField
         label={t('addChild.nameLabel')}
         placeholder={t('addChild.namePlaceholder')}
@@ -38,11 +40,11 @@ export default function AddChild() {
       />
       <Button
         title={t('addChild.create')}
+        icon={ArrowRight}
         disabled={!valid || !family}
         loading={create.isPending}
         onPress={() => create.mutate()}
       />
-      <Button title={t('common.cancel')} variant="secondary" onPress={() => router.back()} />
     </Screen>
   );
 }

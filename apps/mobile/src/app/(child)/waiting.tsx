@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator } from 'react-native';
+import { ArrowClockwise, Hourglass, XCircle } from 'phosphor-react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
 import { childApi, pendingPairing, type PendingPairing } from '@/api/child';
@@ -10,11 +11,13 @@ import { API_URL } from '@/config';
 import { errorMessage } from '@/i18n';
 import { DeviceControl, isDeviceControlAvailable } from '@modules/device-control';
 import { useSession } from '@/state/session';
-import { AppText, Button, Screen } from '@/ui/components';
+import { AppText, Button, Card, IconBadge, Screen } from '@/ui/components';
+import { useTheme } from '@/ui/theme';
 
 /** Polls the request until the parent decides; on approval claims credentials and hands them to native code. */
 export default function ChildWaiting() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const setChildLink = useSession((s) => s.setChildLink);
   const [pending, setPending] = useState<PendingPairing | null>(null);
   const [claimError, setClaimError] = useState<unknown>(null);
@@ -75,21 +78,56 @@ export default function ChildWaiting() {
 
   return (
     <Screen>
-      <AppText variant="title">{t('childWait.title')}</AppText>
-      {status.data?.status === 'rejected' ? <AppText>{t('childWait.rejected')}</AppText> : null}
-      {status.data?.status === 'expired' ? <AppText>{t('childWait.expired')}</AppText> : null}
-      {!closed ? (
-        <>
-          <AppText variant="muted">
-            {status.data?.status === 'approved' ? t('childWait.linking') : t('childWait.body')}
-          </AppText>
-          <ActivityIndicator size="large" />
-        </>
+      <View style={styles.center}>
+        {closed ? (
+          <IconBadge icon={XCircle} size={36} />
+        ) : (
+          <View style={[styles.pulse, { backgroundColor: theme.iconContainer }]}>
+            <Hourglass size={40} color={theme.icon} />
+          </View>
+        )}
+        <AppText variant="display" style={styles.centerText}>
+          {t('childWait.title')}
+        </AppText>
+        {status.data?.status === 'rejected' ? (
+          <AppText style={styles.centerText}>{t('childWait.rejected')}</AppText>
+        ) : null}
+        {status.data?.status === 'expired' ? (
+          <AppText style={styles.centerText}>{t('childWait.expired')}</AppText>
+        ) : null}
+        {!closed ? (
+          <>
+            <AppText variant="muted" style={styles.centerText}>
+              {status.data?.status === 'approved' ? t('childWait.linking') : t('childWait.body')}
+            </AppText>
+            <ActivityIndicator size="large" color={theme.accent} />
+          </>
+        ) : null}
+      </View>
+      {claimError ? (
+        <Card tone="danger">
+          <AppText variant="error">{errorMessage(claimError)}</AppText>
+        </Card>
       ) : null}
-      {claimError ? <AppText variant="error">{errorMessage(claimError)}</AppText> : null}
       {closed || notFound || claimError ? (
-        <Button title={t('childWait.tryAgain')} onPress={() => void restart()} />
+        <Button
+          title={t('childWait.tryAgain')}
+          icon={ArrowClockwise}
+          onPress={() => void restart()}
+        />
       ) : null}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingVertical: 48 },
+  centerText: { textAlign: 'center' },
+  pulse: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

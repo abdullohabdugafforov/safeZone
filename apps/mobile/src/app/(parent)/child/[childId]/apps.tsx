@@ -1,18 +1,21 @@
 import type { InstalledApp, PolicyEnvelope } from '@safekid/shared';
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
+import { AppWindow, FloppyDisk, ShieldCheck } from 'phosphor-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Switch } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
-import { useDevices, usePolicy } from '@/api/parent-hooks';
 import { parentApi, queryKeys } from '@/api/parent';
+import { useDevices, usePolicy } from '@/api/parent-hooks';
 import { errorMessage } from '@/i18n';
-import { AppText, Button, Card, Loading, Row, Screen, Section } from '@/ui/components';
+import { AppText, Button, Card, IconBadge, Loading, Row, Screen, Section } from '@/ui/components';
+import { useTheme } from '@/ui/theme';
 
 export default function AllowedApps() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const queryClient = useQueryClient();
   const { childId } = useLocalSearchParams<{ childId: string }>();
   const policy = usePolicy(childId);
@@ -77,55 +80,79 @@ export default function AllowedApps() {
     });
   };
 
+  const switchColors = { false: theme.border, true: theme.primary };
   const userApps = apps.filter((a) => !a.isSystem);
   const systemApps = apps.filter((a) => a.isSystem);
+  const conflict = save.error instanceof ApiError && save.error.code === 'POLICY_VERSION_CONFLICT';
 
   return (
-    <Screen>
-      <AppText variant="title">{t('apps.title')}</AppText>
-      <Card>
+    <Screen back>
+      <AppText variant="display">{t('apps.title')}</AppText>
+      <Card tone="cyan">
         <Row>
-          <AppText style={{ flex: 1, fontWeight: '600' }}>{t('apps.allowlistMode')}</AppText>
+          <IconBadge icon={ShieldCheck} size={20} filled={allowlist} />
+          <AppText variant="label" style={styles.flex}>
+            {t('apps.allowlistMode')}
+          </AppText>
           <Switch
             value={allowlist}
+            trackColor={switchColors}
             onValueChange={(value) => (setNotice(null), setAllowlist(value))}
           />
         </Row>
-        <AppText variant="muted">{t('apps.allowlistHint')}</AppText>
+        <AppText variant="muted" style={{ color: theme.text }}>
+          {t('apps.allowlistHint')}
+        </AppText>
       </Card>
 
-      {apps.length === 0 ? <AppText variant="muted">{t('apps.empty')}</AppText> : null}
+      {apps.length === 0 ? (
+        <Card>
+          <AppText variant="muted">{t('apps.empty')}</AppText>
+        </Card>
+      ) : null}
       {allowlist && userApps.length > 0 ? (
         <Section title={t('apps.userApps')}>
-          {userApps.map((app) => (
-            <AppToggle
-              key={app.appId}
-              app={app}
-              checked={selected.has(app.appId)}
-              onToggle={toggle}
-            />
-          ))}
+          <Card style={styles.list}>
+            {userApps.map((app) => (
+              <AppToggle
+                key={app.appId}
+                app={app}
+                checked={selected.has(app.appId)}
+                onToggle={toggle}
+              />
+            ))}
+          </Card>
         </Section>
       ) : null}
       {allowlist && systemApps.length > 0 ? (
         <Section title={t('apps.systemApps')}>
-          {systemApps.map((app) => (
-            <AppToggle
-              key={app.appId}
-              app={app}
-              checked={selected.has(app.appId)}
-              onToggle={toggle}
-            />
-          ))}
+          <Card style={styles.list}>
+            {systemApps.map((app) => (
+              <AppToggle
+                key={app.appId}
+                app={app}
+                checked={selected.has(app.appId)}
+                onToggle={toggle}
+              />
+            ))}
+          </Card>
         </Section>
       ) : null}
 
-      {notice ? <AppText variant="muted">{notice}</AppText> : null}
-      {save.error &&
-      !(save.error instanceof ApiError && save.error.code === 'POLICY_VERSION_CONFLICT') ? (
+      {notice ? (
+        <Card tone={conflict ? 'yellow' : 'success'}>
+          <AppText>{notice}</AppText>
+        </Card>
+      ) : null}
+      {save.error && !conflict ? (
         <AppText variant="error">{errorMessage(save.error)}</AppText>
       ) : null}
-      <Button title={t('common.save')} loading={save.isPending} onPress={() => save.mutate()} />
+      <Button
+        title={t('common.save')}
+        icon={FloppyDisk}
+        loading={save.isPending}
+        onPress={() => save.mutate()}
+      />
     </Screen>
   );
 }
@@ -139,16 +166,31 @@ function AppToggle({
   checked: boolean;
   onToggle: (id: string) => void;
 }) {
+  const theme = useTheme();
   return (
-    <Row>
-      <AppText style={{ flex: 1 }} numberOfLines={1}>
+    <View style={[styles.appRow, { borderBottomColor: theme.border }]}>
+      <AppWindow size={22} color={theme.icon} weight={checked ? 'fill' : 'regular'} />
+      <AppText style={styles.flex} numberOfLines={1}>
         {app.label}
       </AppText>
       <Switch
         value={checked}
+        trackColor={{ false: theme.border, true: theme.primary }}
         onValueChange={() => onToggle(app.appId)}
         accessibilityLabel={app.label}
       />
-    </Row>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  list: { paddingVertical: 4, gap: 0 },
+  appRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+});

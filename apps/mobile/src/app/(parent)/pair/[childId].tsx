@@ -1,18 +1,28 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowClockwise, CheckCircle, Hourglass } from 'phosphor-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
-import { useFamily } from '@/api/parent-hooks';
 import { parentApi, queryKeys } from '@/api/parent';
+import { useFamily } from '@/api/parent-hooks';
 import { errorMessage } from '@/i18n';
 import { countdown } from '@/lib/time';
 import { useNow } from '@/lib/use-now';
-import { AppText, Button, Card, Loading, Screen } from '@/ui/components';
+import {
+  AppText,
+  Button,
+  Card,
+  IconBadge,
+  Loading,
+  Row,
+  Screen,
+  StatusPill,
+} from '@/ui/components';
 import { PairingRequestCard } from '@/ui/pairing-request-card';
-import { useTheme } from '@/ui/theme';
+import { palette, radius, useTheme } from '@/ui/theme';
 
 /** Parent shows a code + QR; the child's phone submits a request which the parent approves here. */
 export default function PairChild() {
@@ -65,8 +75,9 @@ export default function PairChild() {
 
   if (approved) {
     return (
-      <Screen>
-        <AppText variant="title">{child.data.name}</AppText>
+      <Screen back>
+        <IconBadge icon={CheckCircle} size={32} filled />
+        <AppText variant="display">{child.data.name}</AppText>
         <AppText>{t('pair.approved')}</AppText>
         <Button title={t('pair.done')} onPress={() => router.back()} />
       </Screen>
@@ -74,34 +85,46 @@ export default function PairChild() {
   }
 
   return (
-    <Screen>
-      <AppText variant="title">{t('pair.title', { name: child.data.name })}</AppText>
+    <Screen back>
+      <AppText variant="display">{t('pair.title', { name: child.data.name })}</AppText>
       <AppText variant="muted">{t('pair.instructions')}</AppText>
 
       {code.error ? <AppText variant="error">{errorMessage(code.error)}</AppText> : null}
 
       {code.data && !expired ? (
-        <Card>
+        <Card style={[styles.codeCard, { backgroundColor: theme.hero, borderColor: theme.hero }]}>
           <View style={styles.qr}>
-            <View style={styles.qrBackground}>
-              <QRCode value={code.data.qrPayload} size={200} />
-            </View>
-            <AppText
-              style={[styles.code, { color: theme.text }]}
-              accessibilityLabel={code.data.code.split('').join(' ')}
-            >
-              {code.data.code.slice(0, 3)} {code.data.code.slice(3)}
-            </AppText>
-            <AppText variant="muted">
-              {t('pair.expiresIn', { time: countdown(Date.parse(code.data.expiresAt) - now) })}
-            </AppText>
+            <QRCode
+              value={code.data.qrPayload}
+              size={196}
+              color={palette.ink}
+              backgroundColor={palette.white}
+            />
           </View>
+          <AppText
+            variant="mono"
+            style={{ color: palette.cyan }}
+            accessibilityLabel={code.data.code.split('').join(' ')}
+          >
+            {code.data.code.slice(0, 3)} {code.data.code.slice(3)}
+          </AppText>
+          <StatusPill
+            tone="brand"
+            label={t('pair.expiresIn', { time: countdown(Date.parse(code.data.expiresAt) - now) })}
+          />
         </Card>
       ) : null}
 
-      {expired ? <AppText variant="muted">{t('pair.expired')}</AppText> : null}
       {expired || code.error ? (
-        <Button title={t('pair.newCode')} loading={code.isPending} onPress={() => issueCode()} />
+        <Card tone="yellow">
+          {expired ? <AppText>{t('pair.expired')}</AppText> : null}
+          <Button
+            title={t('pair.newCode')}
+            icon={ArrowClockwise}
+            loading={code.isPending}
+            onPress={() => issueCode()}
+          />
+        </Card>
       ) : null}
 
       {request ? (
@@ -113,7 +136,13 @@ export default function PairChild() {
           onReject={() => decide.mutate(false)}
         />
       ) : !expired ? (
-        <AppText variant="muted">{t('pair.waiting')}</AppText>
+        <Row style={styles.waiting}>
+          <Hourglass size={20} color={theme.accent} />
+          <AppText variant="muted" style={styles.flex}>
+            {t('pair.waiting')}
+          </AppText>
+          <ActivityIndicator color={theme.accent} />
+        </Row>
       ) : null}
       {decide.error ? <AppText variant="error">{errorMessage(decide.error)}</AppText> : null}
     </Screen>
@@ -121,7 +150,8 @@ export default function PairChild() {
 }
 
 const styles = StyleSheet.create({
-  qr: { alignItems: 'center', gap: 12 },
-  qrBackground: { backgroundColor: '#FFFFFF', padding: 12, borderRadius: 12 },
-  code: { fontSize: 40, fontWeight: '700', letterSpacing: 6, fontVariant: ['tabular-nums'] },
+  flex: { flex: 1 },
+  codeCard: { alignItems: 'center', gap: 16, paddingVertical: 28 },
+  qr: { backgroundColor: palette.white, padding: 14, borderRadius: radius.lg },
+  waiting: { paddingHorizontal: 4 },
 });

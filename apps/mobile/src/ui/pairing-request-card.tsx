@@ -1,7 +1,10 @@
 import type { PairingRequest } from '@safekid/shared';
+import { Check, DeviceMobile, Warning, X } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
+import { StyleSheet, View } from 'react-native';
 
-import { AppText, Button, Card, Row } from './components';
+import { AppText, Button, Card, IconBadge, Row } from './components';
+import { useTheme } from './theme';
 
 /** Shows who wants to link and the approve/reject actions. */
 export function PairingRequestCard({
@@ -20,9 +23,18 @@ export function PairingRequestCard({
   children?: React.ReactNode;
 }) {
   const { t } = useTranslation();
+  const theme = useTheme();
   return (
-    <Card>
-      <AppText style={{ fontWeight: '600' }}>{t('pair.requestTitle')}</AppText>
+    <Card style={styles.card}>
+      <Row>
+        <IconBadge icon={DeviceMobile} size={22} />
+        <View style={styles.flex}>
+          <AppText variant="label">{t('pair.requestTitle')}</AppText>
+          <AppText variant="muted">
+            {request.method === 'phone' ? t('requests.viaPhone') : t('requests.viaCode')}
+          </AppText>
+        </View>
+      </Row>
       <AppText>
         {t('pair.requestBody', {
           model: request.device.deviceName ?? request.device.model,
@@ -30,26 +42,42 @@ export function PairingRequestCard({
           name: childName,
         })}
       </AppText>
-      <AppText variant="muted">
-        {request.method === 'phone' ? t('requests.viaPhone') : t('requests.viaCode')}
-      </AppText>
-      <AppText variant="muted">{t('requests.unknownWarning')}</AppText>
+      <Card tone="yellow" style={styles.warning}>
+        <Row>
+          <Warning
+            size={20}
+            color={theme.scheme === 'dark' ? theme.text : '#7A4B00'}
+            weight="fill"
+          />
+          <AppText variant="muted" style={[styles.flex, { color: theme.text }]}>
+            {t('requests.unknownWarning')}
+          </AppText>
+        </Row>
+      </Card>
       {children}
       <Row>
         <Button
           title={t('common.reject')}
+          icon={X}
           variant="secondary"
           disabled={busy}
           onPress={onReject}
-          style={{ flex: 1 }}
+          style={styles.flex}
         />
         <Button
           title={t('common.approve')}
+          icon={Check}
           loading={busy}
           onPress={onApprove}
-          style={{ flex: 1 }}
+          style={styles.flex}
         />
       </Row>
     </Card>
   );
 }
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  card: { gap: 14 },
+  warning: { padding: 12 },
+});

@@ -7,6 +7,7 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Camera, Keyboard, PaperPlaneTilt, QrCode } from 'phosphor-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
@@ -14,7 +15,8 @@ import { StyleSheet, View } from 'react-native';
 import { childApi, currentDeviceInfo, pendingPairing } from '@/api/child';
 import { errorMessage } from '@/i18n';
 import { useSession } from '@/state/session';
-import { AppText, Button, Row, Screen, TextField } from '@/ui/components';
+import { AppText, Button, Card, Chip, Hero, Row, Screen, TextField } from '@/ui/components';
+import { palette, radius } from '@/ui/theme';
 
 type Mode = 'scan' | 'code' | 'phone';
 
@@ -57,26 +59,23 @@ export default function ChildLink() {
   };
 
   const error = inputError ?? (submit.error ? errorMessage(submit.error) : null);
+  const modes: { id: Mode; label: string }[] = [
+    { id: 'scan', label: t('childLink.scan') },
+    { id: 'code', label: t('childLink.enterCode') },
+    { id: 'phone', label: t('childLink.usePhone') },
+  ];
 
   return (
     <Screen>
-      <AppText variant="title">{t('childLink.title')}</AppText>
-      <AppText variant="muted">{t('childLink.subtitle')}</AppText>
+      <Hero title={t('childLink.title')} subtitle={t('childLink.subtitle')} />
 
-      <Row>
-        {(['scan', 'code', 'phone'] as const).map((m) => (
-          <Button
-            key={m}
-            style={{ flex: 1 }}
-            variant={mode === m ? 'primary' : 'secondary'}
-            title={
-              m === 'scan'
-                ? t('childLink.scan')
-                : m === 'code'
-                  ? t('childLink.enterCode')
-                  : t('childLink.usePhone')
-            }
-            onPress={() => (setInputError(null), setMode(m))}
+      <Row style={styles.wrap}>
+        {modes.map((m) => (
+          <Chip
+            key={m.id}
+            label={m.label}
+            selected={mode === m.id}
+            onPress={() => (setInputError(null), setMode(m.id))}
           />
         ))}
       </Row>
@@ -90,25 +89,27 @@ export default function ChildLink() {
       ) : null}
 
       {mode === 'code' ? (
-        <>
+        <Card>
           <TextField
             label={t('childLink.codeLabel')}
             keyboardType="number-pad"
             maxLength={6}
             value={code}
             onChangeText={(v) => setCode(v.replace(/\D/g, ''))}
+            style={styles.code}
           />
           <Button
             title={t('childLink.send')}
+            icon={Keyboard}
             loading={submit.isPending}
             disabled={code.length !== 6}
             onPress={() => sendCode(code)}
           />
-        </>
+        </Card>
       ) : null}
 
       {mode === 'phone' ? (
-        <>
+        <Card>
           <TextField
             label={t('childLink.phoneLabel')}
             placeholder={t('login.phonePlaceholder')}
@@ -116,14 +117,23 @@ export default function ChildLink() {
             value={phone}
             onChangeText={setPhone}
           />
-          <Button title={t('childLink.send')} loading={submit.isPending} onPress={sendPhone} />
-        </>
+          <Button
+            title={t('childLink.send')}
+            icon={PaperPlaneTilt}
+            loading={submit.isPending}
+            onPress={sendPhone}
+          />
+        </Card>
       ) : null}
 
-      {error ? <AppText variant="error">{error}</AppText> : null}
+      {error ? (
+        <Card tone="danger">
+          <AppText variant="error">{error}</AppText>
+        </Card>
+      ) : null}
       <Button
         title={t('onboarding.changeRole')}
-        variant="secondary"
+        variant="ghost"
         onPress={() => void setRole(null).then(() => router.replace('/'))}
       />
     </Screen>
@@ -146,10 +156,17 @@ function QrScanner({
   if (!permission) return null;
   if (!permission.granted) {
     return (
-      <View style={styles.permission}>
-        <AppText variant="muted">{t('childLink.cameraPermission')}</AppText>
-        <Button title={t('childLink.allowCamera')} onPress={() => void requestPermission()} />
-      </View>
+      <Card tone="cyan">
+        <Row>
+          <QrCode size={28} color={palette.deep} />
+          <AppText style={styles.flex}>{t('childLink.cameraPermission')}</AppText>
+        </Row>
+        <Button
+          title={t('childLink.allowCamera')}
+          icon={Camera}
+          onPress={() => void requestPermission()}
+        />
+      </Card>
     );
   }
   return (
@@ -169,11 +186,29 @@ function QrScanner({
               }
         }
       />
+      <View style={styles.frame} pointerEvents="none" />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  camera: { height: 300, borderRadius: 16, overflow: 'hidden' },
-  permission: { gap: 12 },
+  flex: { flex: 1 },
+  wrap: { flexWrap: 'wrap' },
+  code: { letterSpacing: 8, fontSize: 24, textAlign: 'center' },
+  camera: {
+    height: 320,
+    borderRadius: radius.xl,
+    overflow: 'hidden',
+    backgroundColor: palette.ink,
+  },
+  frame: {
+    position: 'absolute',
+    top: 50,
+    bottom: 50,
+    left: 50,
+    right: 50,
+    borderWidth: 3,
+    borderColor: palette.cyan,
+    borderRadius: radius.lg,
+  },
 });
