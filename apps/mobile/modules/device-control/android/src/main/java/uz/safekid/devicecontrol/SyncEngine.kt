@@ -22,6 +22,7 @@ class SyncEngine(private val context: Context) {
     batteryLevel()?.let { body.put("batteryLevel", it) }
 
     val res = session.request("POST", "/device/heartbeat", body)
+    if (res.code in 200..299) lastHeartbeatOkAt = System.currentTimeMillis()
     val json = res.body ?: return
     val latest = json.optInt("latestPolicyVersion", 0)
     if (latest > (store.appliedPolicyVersion() ?: 0) || json.optBoolean("hasPendingCommands")) syncNow()
@@ -86,5 +87,8 @@ class SyncEngine(private val context: Context) {
 
   companion object {
     private const val TAG = "SafeKid"
+
+    /** Wall time of the last accepted heartbeat in this process (0 = none yet). */
+    @Volatile var lastHeartbeatOkAt = 0L
   }
 }

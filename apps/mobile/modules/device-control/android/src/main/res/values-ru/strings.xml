@@ -12,4 +12,5 @@
   <string name="safekid_locked_title">Телефон заблокирован</string>
   <string name="safekid_locked_body">Родитель заблокировал этот телефон. Звонки работают.</string>
   <string name="safekid_go_home">На главный экран</string>
+  <string name="safekid_protected_screen">Эта настройка защищена родителем.</string>
 </resources>

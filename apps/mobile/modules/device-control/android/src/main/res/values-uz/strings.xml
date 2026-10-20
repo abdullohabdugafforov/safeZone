@@ -12,4 +12,5 @@
   <string name="safekid_locked_title">Telefon qulflangan</string>
   <string name="safekid_locked_body">Ota-onangiz bu telefonni qulflagan. Qo‘ng‘iroqlar ishlaydi.</string>
   <string name="safekid_go_home">Bosh ekranga</string>
+  <string name="safekid_protected_screen">Bu sozlama ota-onangiz tomonidan himoyalangan.</string>
 </resources>

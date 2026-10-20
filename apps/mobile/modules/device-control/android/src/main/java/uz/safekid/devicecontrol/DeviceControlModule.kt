@@ -50,6 +50,7 @@ class DeviceControlModule : Module() {
     AsyncFunction("getPermissionStatus") { Permissions.status(context) }
 
     AsyncFunction("requestPermission") { kind: String ->
+      TamperGuard.grantSetupGrace()
       val intent = Permissions.settingsIntent(context, kind) ?: throw IllegalArgumentException("Unsupported permission $kind")
       val activity = appContext.currentActivity
       if (activity != null) {
@@ -62,6 +63,7 @@ class DeviceControlModule : Module() {
     // App's system settings page: needed for "Allow restricted settings" (Android 13+,
     // apps installed outside a store) and OEM autostart/background toggles.
     AsyncFunction("openAppSettings") {
+      TamperGuard.grantSetupGrace()
       val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}"))
       val activity = appContext.currentActivity
       if (activity != null) activity.startActivity(intent) else context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))

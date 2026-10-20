@@ -6,6 +6,8 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
+import android.widget.Toast
 import android.view.accessibility.AccessibilityEvent
 import java.time.Instant
 import java.util.concurrent.Executors
@@ -34,6 +36,7 @@ class EnforcementAccessibilityService : AccessibilityService() {
   private val tick = object : Runnable {
     override fun run() {
       enforce()
+      heartbeatIfStale()
       handler.postDelayed(this, TICK_MS)
     }
   }
@@ -70,13 +73,62 @@ class EnforcementAccessibilityService : AccessibilityService() {
   override fun onAccessibilityEvent(event: AccessibilityEvent) {
     if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
     val pkg = event.packageName?.toString() ?: return
+    val cls = event.className?.toString()
+    // Package/class names only (no window content), to tune OEM-specific screens via logcat.
+    Log.i(WINDOW_TAG, "$pkg/$cls")
     // Our own windows (including the overlay) never change the decision.
     if (pkg == packageName) return
+    if (DeviceSession.get(this).isLinked) {
+      val state = TamperGuard.State(
+        adminActive = Permissions.isDeviceAdminActive(this),
+        appSettingsGrace = System.currentTimeMillis() < TamperGuard.appSettingsGraceUntil,
+      )
+      TamperGuard.classify(pkg, cls, state)?.let {
+        onTamper(it)
+        return
+      }
+    }
     // Dialogs, panels and OEM overlays are not "opening an app": keep the current app.
-    if (!isActivity(pkg, event.className?.toString()) && !isLaunchable(pkg)) return
+    if (!isActivity(pkg, cls) && !isLaunchable(pkg)) return
     foregroundPackage = pkg
     enforce()
   }
+
+  private val lastTamperReport = HashMap<TamperGuard.Target, Long>()
+
+  /** Leaves the protected screen and tells the parent (at most every 2 minutes per screen). */
+  private fun onTamper(target: TamperGuard.Target) {
+    performGlobalAction(GLOBAL_ACTION_BACK)
+    performGlobalAction(GLOBAL_ACTION_HOME)
+    Toast.makeText(this, R.string.safekid_protected_screen, Toast.LENGTH_LONG).show()
+    val now = System.currentTimeMillis()
+    if (now - (lastTamperReport[target] ?: 0L) < 2 * 60_000) return
+    lastTamperReport[target] = now
+    background.execute {
+      runCatching { SyncEngine(this).reportAlert("TAMPER_ATTEMPT", mapOf("target" to target.wire)) }
+        .onFailure { Log.w(TAG, "Tamper report failed: ${it.javaClass.simpleName}: ${it.message}") }
+    }
+  }
+
+  /** Runs a heartbeat if none succeeded recently (OEMs sometimes stall the service's timer). */
+  private fun heartbeatIfStale() {
+    if (!DeviceSession.get(this).isLinked) return
+    if (System.currentTimeMillis() - SyncEngine.lastHeartbeatOkAt < 2 * 60_000) return
+    if (heartbeatInFlight) return
+    heartbeatInFlight = true
+    background.execute {
+      try {
+        SyncEngine(this).heartbeat()
+      } catch (e: Exception) {
+        Log.w(TAG, "Fallback heartbeat failed: ${e.javaClass.simpleName}: ${e.message}")
+      } finally {
+        heartbeatInFlight = false
+      }
+    }
+  }
+
+  @Volatile private var heartbeatInFlight = false
+  private val background = Executors.newSingleThreadExecutor()
 
   private val launchableCache = HashMap<String, Boolean>()
 
@@ -98,6 +150,7 @@ class EnforcementAccessibilityService : AccessibilityService() {
 
   override fun onDestroy() {
     syncFallback?.shutdownNow()
+    background.shutdownNow()
     handler.removeCallbacksAndMessages(null)
     if (::store.isInitialized) store.unregisterListener(policyListener)
     if (::overlay.isInitialized) overlay.hide()
@@ -126,5 +179,7 @@ class EnforcementAccessibilityService : AccessibilityService() {
 
   companion object {
     private const val TICK_MS = 15_000L
+    private const val TAG = "SafeKid"
+    private const val WINDOW_TAG = "SafeKidWin"
   }
 }
