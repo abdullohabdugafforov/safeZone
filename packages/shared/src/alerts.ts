@@ -10,6 +10,7 @@ export const deviceAlertTypeSchema = z.enum([
   'DEVICE_ADMIN_DISABLED',
   'ENFORCEMENT_STOPPED',
   'TIME_CHANGED',
+  'TAMPER_ATTEMPT',
 ]);
 export type DeviceAlertType = z.infer<typeof deviceAlertTypeSchema>;
 
@@ -31,6 +32,11 @@ export const deviceAlertBodySchema = z.discriminatedUnion('type', [
     type: z.literal('TIME_CHANGED'),
     /** Device clock minus server clock, in seconds. */
     skewSeconds: z.number().int(),
+  }),
+  z.object({
+    type: z.literal('TAMPER_ATTEMPT'),
+    /** What was blocked: a protected settings screen or an uninstall dialog. */
+    target: z.enum(['device_admin', 'uninstall', 'accessibility_settings', 'app_settings']),
   }),
 ]);
 export type DeviceAlertBody = z.infer<typeof deviceAlertBodySchema>;
@@ -58,6 +64,6 @@ export const listAlertsQuerySchema = z.object({
 });
 export type ListAlertsQuery = z.infer<typeof listAlertsQuerySchema>;
 
-/** Heartbeat older than this raises HEARTBEAT_LOST. */
-export const HEARTBEAT_INTERVAL_SECONDS = 15 * 60;
-export const HEARTBEAT_LOST_AFTER_SECONDS = 3 * HEARTBEAT_INTERVAL_SECONDS;
+/** Devices send a heartbeat about every minute; silence longer than this raises HEARTBEAT_LOST. */
+export const HEARTBEAT_INTERVAL_SECONDS = 60;
+export const HEARTBEAT_LOST_AFTER_SECONDS = 10 * 60;

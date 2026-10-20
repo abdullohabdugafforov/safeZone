@@ -43,7 +43,7 @@ fi
 say "Building shared package and applying migrations"
 (cd "$ROOT" && pnpm install --frozen-lockfile >/dev/null)
 (cd "$ROOT" && pnpm --filter @safekid/shared build >/dev/null)
-(cd "$ROOT/apps/backend" && pnpm exec prisma migrate deploy)
+(cd "$ROOT/apps/backend" && pnpm exec prisma generate >/dev/null && pnpm exec prisma migrate deploy)
 
 # --- Ports ---------------------------------------------------------------------
 for port in "$API_PORT" "$METRO_PORT"; do

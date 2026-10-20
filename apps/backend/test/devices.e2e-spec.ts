@@ -193,6 +193,28 @@ describe('devices (e2e)', () => {
     });
   });
 
+  describe('tamper attempts', () => {
+    it('records blocked attempts to reach protected screens', async () => {
+      await http()
+        .post('/v1/device/alerts')
+        .set(device.auth)
+        .send({ type: 'TAMPER_ATTEMPT', target: 'uninstall' })
+        .expect(204);
+      await http()
+        .post('/v1/device/alerts')
+        .set(device.auth)
+        .send({ type: 'TAMPER_ATTEMPT', target: 'something-else' })
+        .expect(400);
+      const alerts = await http().get('/v1/alerts').set(alice.auth).expect(200);
+      expect(alerts.body).toEqual([
+        expect.objectContaining({
+          type: 'TAMPER_ATTEMPT',
+          details: expect.objectContaining({ target: 'uninstall' }),
+        }),
+      ]);
+    });
+  });
+
   describe('parent access control', () => {
     it("other parents can't see or unlink the device", async () => {
       await http().get(`/v1/devices/${device.deviceId}`).set(bob.auth).expect(404);
