@@ -1,7 +1,9 @@
 package uz.safekid.devicecontrol
 
 import android.accessibilityservice.AccessibilityService
+import android.content.ComponentName
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
@@ -40,7 +42,7 @@ class EnforcementAccessibilityService : AccessibilityService() {
     super.onServiceConnected()
     overlay = BlockOverlay(this)
     store = DeviceSession.get(this).store
-    evaluator = PolicyEvaluator(InstalledApps.essential(this), InstalledApps.launchers(this))
+    evaluator = PolicyEvaluator(InstalledApps.essential(this), InstalledApps.launchers(this), ::isLaunchable)
     store.registerListener(policyListener)
     reloadPolicy()
     handler.post(tick)
@@ -70,8 +72,26 @@ class EnforcementAccessibilityService : AccessibilityService() {
     val pkg = event.packageName?.toString() ?: return
     // Our own windows (including the overlay) never change the decision.
     if (pkg == packageName) return
+    // Dialogs, panels and OEM overlays are not "opening an app": keep the current app.
+    if (!isActivity(pkg, event.className?.toString()) && !isLaunchable(pkg)) return
     foregroundPackage = pkg
     enforce()
+  }
+
+  private val launchableCache = HashMap<String, Boolean>()
+
+  /** Has a home-screen icon, i.e. is an app the parent can allow or block. */
+  private fun isLaunchable(pkg: String): Boolean =
+    launchableCache.getOrPut(pkg) { packageManager.getLaunchIntentForPackage(pkg) != null }
+
+  private fun isActivity(pkg: String, className: String?): Boolean {
+    if (className.isNullOrEmpty()) return false
+    return try {
+      packageManager.getActivityInfo(ComponentName(pkg, className), 0)
+      true
+    } catch (_: PackageManager.NameNotFoundException) {
+      false
+    }
   }
 
   override fun onInterrupt() = Unit

@@ -111,4 +111,24 @@ class PolicyEvaluatorTest {
     assertEquals(3, policy().version)
     assertThrows(Exception::class.java) { Policy.fromJson(JSONObject("""{"version": 1}""")) }
   }
+
+  @Test fun allowlistIgnoresNonLaunchableSystemWindows() {
+    val launchable = setOf("org.telegram.messenger", "com.game")
+    val oem = PolicyEvaluator(
+      essential = setOf("uz.safekid.app"),
+      launchers = setOf("com.bbk.launcher2"),
+      isLaunchableApp = { it in launchable },
+    )
+    val p = policy(mode = "allowlist", allowed = listOf("org.telegram.messenger"))
+    assertEquals(Decision.Allow, oem.evaluate(p, "com.bbk.launcher2", noon))
+    assertEquals(Decision.Allow, oem.evaluate(p, "org.telegram.messenger", noon))
+    assertEquals(Decision.Allow, oem.evaluate(p, "com.vivo.upslide", noon))
+    assertEquals(block(Decision.Reason.NOT_ALLOWED), oem.evaluate(p, "com.game", noon))
+  }
+
+  @Test fun lockStillCoversNonLaunchableWindows() {
+    val oem = PolicyEvaluator(emptySet(), emptySet(), isLaunchableApp = { false })
+    val p = policy(lock = """{"state":"locked"}""")
+    assertEquals(block(Decision.Reason.LOCKED), oem.evaluate(p, "com.vivo.upslide", noon))
+  }
 }

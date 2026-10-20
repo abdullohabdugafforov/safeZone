@@ -14,10 +14,14 @@ sealed class Decision {
  *
  * @param essential packages that always work (SafeKid, system UI, phone/emergency, keyboards)
  * @param launchers home screens: allowed unless the device is locked
+ * @param isLaunchableApp whether a package is an app the child can open from the home
+ *   screen. The allowlist only governs those (it is chosen from that list); OEM system
+ *   windows and services without a launcher icon are never blocked by it.
  */
 class PolicyEvaluator(
   private val essential: Set<String>,
   private val launchers: Set<String>,
+  private val isLaunchableApp: (String) -> Boolean = { true },
 ) {
   fun evaluate(policy: Policy?, packageName: String, now: Instant): Decision {
     if (policy == null) return Decision.Allow
@@ -25,7 +29,8 @@ class PolicyEvaluator(
     lockReason(policy, now)?.let { return Decision.Block(it) }
     if (policy.mode == Policy.Mode.ALLOWLIST &&
       packageName !in policy.allowedApps &&
-      packageName !in launchers
+      packageName !in launchers &&
+      isLaunchableApp(packageName)
     ) {
       return Decision.Block(Decision.Reason.NOT_ALLOWED)
     }
