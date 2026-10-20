@@ -40,7 +40,8 @@
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "jest"
+    "test": "jest",
+    "start:go": "expo start --go"
   },
   "private": true
 }
