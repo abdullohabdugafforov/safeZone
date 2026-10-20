@@ -57,6 +57,26 @@ export default function ChildDetail() {
     onSuccess: (envelope) => queryClient.setQueryData(queryKeys.policy(childId), envelope),
   });
 
+  const remove = useMutation({
+    mutationFn: () => parentApi.deleteChild(childId),
+    onSuccess: async () => {
+      // Child, its devices and policy are gone: refresh lists and leave the screen.
+      await queryClient.invalidateQueries({ queryKey: ['children'] });
+      queryClient.removeQueries({ queryKey: queryKeys.child(childId) });
+      router.back();
+    },
+  });
+
+  const confirmDelete = () =>
+    Alert.alert(
+      t('child.deleteChild'),
+      t('child.deleteChildConfirm', { name: child.data?.name ?? '' }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('child.deleteChild'), style: 'destructive', onPress: () => remove.mutate() },
+      ],
+    );
+
   if (!child.data || !policy.data) return <Loading />;
 
   const lock = policy.data.document.lock;
@@ -154,6 +174,16 @@ export default function ChildDetail() {
           onPress={() => router.push({ pathname: '/(parent)/pair/[childId]', params: { childId } })}
         />
       </Section>
+
+      <Button
+        title={t('child.deleteChild')}
+        icon={Trash}
+        variant="ghost"
+        loading={remove.isPending}
+        onPress={confirmDelete}
+        style={{ marginTop: 8 }}
+      />
+      {remove.error ? <AppText variant="error">{errorMessage(remove.error)}</AppText> : null}
     </Screen>
   );
 }

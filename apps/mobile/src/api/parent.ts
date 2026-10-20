@@ -40,6 +40,7 @@ export const parentApi = {
   createChild: (familyId: string, body: CreateChildBody) =>
     api.post(`/families/${familyId}/children`, { auth, body, schema: childSchema }),
   child: (childId: string) => api.get(`/children/${childId}`, { auth, schema: childSchema }),
+  deleteChild: (childId: string) => api.delete(`/children/${childId}`, { auth }),
 
   createPairingCode: (familyId: string, childId?: string) =>
     api.post(`/families/${familyId}/pairing-codes`, {

@@ -94,6 +94,9 @@ const en = {
     syncing: 'Applying settings…',
     permissionsMissing: 'Protection is not fully enabled on this phone',
     unlink: 'Unlink device',
+    deleteChild: 'Delete child',
+    deleteChildConfirm:
+      'Delete {{name}}? Linked devices will be unlinked and stop being controlled. This cannot be undone.',
     unlinkConfirm: 'Unlink this device? It will no longer be controlled.',
   },
   apps: {

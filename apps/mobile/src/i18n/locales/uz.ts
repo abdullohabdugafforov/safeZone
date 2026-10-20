@@ -97,6 +97,9 @@ const uz: Translation = {
     syncing: 'Sozlamalar qo‘llanmoqda…',
     permissionsMissing: 'Bu telefonda himoya to‘liq yoqilmagan',
     unlink: 'Qurilmani uzish',
+    deleteChild: 'Farzandni o‘chirish',
+    deleteChildConfirm:
+      '{{name}} o‘chirilsinmi? Ulangan qurilmalar uziladi va boshqarilmay qoladi. Buni qaytarib bo‘lmaydi.',
     unlinkConfirm: 'Qurilma uzilsinmi? U endi boshqarilmaydi.',
   },
   apps: {
