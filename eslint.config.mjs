@@ -49,7 +49,7 @@ export default tseslint.config(
     files: ['**/*.config.js'],
     languageOptions: {
       sourceType: 'commonjs',
-      globals: { module: 'writable', require: 'readonly' },
+      globals: { module: 'writable', require: 'readonly', process: 'readonly' },
     },
   },
   prettier,
