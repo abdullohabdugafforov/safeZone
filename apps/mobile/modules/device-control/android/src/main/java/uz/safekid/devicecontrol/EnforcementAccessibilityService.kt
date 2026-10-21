@@ -51,6 +51,7 @@ class EnforcementAccessibilityService : AccessibilityService() {
     handler.post(tick)
     EnforcementService.start(this)
     startSyncFallback()
+    SpaceWatcher.register(this)
   }
 
   /**

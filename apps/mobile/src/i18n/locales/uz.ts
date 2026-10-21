@@ -96,6 +96,9 @@ const uz: Translation = {
     neverSeen: 'Hali ulanmagan',
     syncing: 'Sozlamalar qo‘llanmoqda…',
     permissionsMissing: 'Bu telefonda himoya to‘liq yoqilmagan',
+    otherSpace: 'Boshqa makonda',
+    otherSpaceWarning: 'Telefon boshqa makonda, u yerda SafeKid ilovalarni bloklay olmaydi.',
+    protectionTips: 'Himoyani aylanib o‘tishni qiyinlashtirish',
     unlink: 'Qurilmani uzish',
     deleteChild: 'Farzandni o‘chirish',
     deleteChildConfirm:
@@ -222,6 +225,9 @@ const uz: Translation = {
       TIME_CHANGED: '{{child}}: telefon soati o‘zgartirildi',
       HEARTBEAT_LOST:
         '{{child}}ning telefoni bilan aloqa yo‘q. U o‘chiq, internetsiz yoki SafeKid o‘chirilgan bo‘lishi mumkin.',
+      SECOND_SPACE_ENTERED:
+        '{{child}} telefonda boshqa makonga (masalan, Второе пространство) o‘tdi. U yerda SafeKid boshqara olmaydi.',
+      SECOND_SPACE_LEFT: '{{child}} boshqa makondan {{minutes}} daqiqadan keyin qaytdi.',
       APP_REMOVED_SUSPECTED: '{{child}}ning telefonidan SafeKid o‘chirilgan bo‘lishi mumkin',
     },
     target: {
@@ -229,7 +235,18 @@ const uz: Translation = {
       device_admin: 'administrator sozlamalari',
       accessibility_settings: 'maxsus imkoniyatlar sozlamalari',
       app_settings: 'SafeKid ilova sozlamalari',
+      second_space: 'ikkinchi makon sozlamalari',
     },
+  },
+  protectionTips: {
+    title: 'To‘liq himoya ro‘yxati',
+    items: [
+      '«Второе пространство» va «Двойные приложения»ni o‘chiring: Настройки → Особые возможности → Второе пространство → удалить. Buni faqat asosiy makondan qilish mumkin, uni esa SafeKid himoya qiladi.',
+      'Ikkinchi makon uchun bola bilmaydigan parol qo‘ying yoki uni umuman yaratmang. Xiaomi qulf ekranidan o‘z paroli bilan to‘g‘ridan-to‘g‘ri ikkinchi makonga kirishga imkon beradi.',
+      'SafeKid uchun maxsus imkoniyatlar tezkor tugmasini o‘chiring: Настройки → Спец. возможности → Защита SafeKid → Быстрый запуск.',
+      'Batareya: SafeKid → О приложении → Батарея → «Нет ограничений», va «Автозапуск»ga ruxsat bering.',
+      'Telefonning qulf ekrani va Google akkaunti sizning nazoratingizda bo‘lsin.',
+    ],
   },
   time: {
     justNow: 'hozirgina',

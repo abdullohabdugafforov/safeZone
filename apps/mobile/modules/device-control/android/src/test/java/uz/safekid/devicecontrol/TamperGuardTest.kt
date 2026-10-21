@@ -45,4 +45,16 @@ class TamperGuardTest {
     assertNull(TamperGuard.classify("com.android.settings", "com.android.settings.wifi.WifiSettings", active))
     assertNull(TamperGuard.classify("com.android.settings", null, active))
   }
+
+  @Test fun blocksSecondSpaceEntryPoints() {
+    assertEquals(
+      TamperGuard.Target.SECOND_SPACE,
+      TamperGuard.classify("com.miui.securitycore", "com.miui.securitycore.ui.SecondSpaceSettingsActivity", active),
+    )
+    assertEquals(
+      TamperGuard.Target.SECOND_SPACE,
+      TamperGuard.classify("com.android.settings", "com.android.settings.Settings\$UserSettingsActivity", setup),
+    )
+    assertNull(TamperGuard.classify("com.example.game", "com.example.game.SwitchUserActivity", active))
+  }
 }

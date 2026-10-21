@@ -6,17 +6,19 @@ import {
   ProhibitInset,
   ShieldSlash,
   Trash,
+  UsersThree,
   WifiSlash,
   type Icon,
 } from 'phosphor-react-native';
 
 /** Human sentence for an alert, e.g. "Ali tried to open the uninstall screen. It was blocked." */
 export function alertText(alert: Alert, childName: string, t: TFunction): string {
-  const details = alert.details as { permission?: string; target?: string };
+  const details = alert.details as { permission?: string; target?: string; minutes?: number };
   return t(`alerts.type.${alert.type}`, {
     child: childName,
     permission: details.permission ? t(`disclosure.${details.permission}.title`) : '',
     target: details.target ? t(`alerts.target.${details.target}`) : '',
+    minutes: details.minutes ?? 0,
   });
 }
 
@@ -30,6 +32,9 @@ export function alertIcon(alert: Alert): Icon {
       return ShieldSlash;
     case 'TAMPER_ATTEMPT':
       return ProhibitInset;
+    case 'SECOND_SPACE_ENTERED':
+    case 'SECOND_SPACE_LEFT':
+      return UsersThree;
     case 'HEARTBEAT_LOST':
       return WifiSlash;
     case 'APP_REMOVED_SUSPECTED':

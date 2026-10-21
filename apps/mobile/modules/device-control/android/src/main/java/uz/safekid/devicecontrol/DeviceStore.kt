@@ -85,6 +85,14 @@ class DeviceStore(context: Context) {
     prefs.edit().putString(KEY_LAST_PERMISSIONS, JSONObject(permissions).toString()).apply()
   }
 
+  // --- other user space (second space) ---
+
+  fun otherSpaceSince(): Long? = if (prefs.contains(KEY_OTHER_SPACE)) prefs.getLong(KEY_OTHER_SPACE, 0) else null
+
+  fun setOtherSpaceSince(time: Long?) {
+    prefs.edit().apply { if (time == null) remove(KEY_OTHER_SPACE) else putLong(KEY_OTHER_SPACE, time) }.apply()
+  }
+
   fun registerListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) =
     prefs.registerOnSharedPreferenceChangeListener(listener)
 
@@ -99,6 +107,7 @@ class DeviceStore(context: Context) {
     private const val KEY_ACCESS = "accessToken"
     private const val KEY_REFRESH = "refreshToken"
     private const val KEY_LAST_PERMISSIONS = "lastPermissions"
+    private const val KEY_OTHER_SPACE = "otherSpaceSince"
   }
 }
 

@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import {
   AppWindow,
   DeviceMobile,
+  ListChecks,
   Lock,
   LockOpen,
   Plus,
@@ -189,6 +190,12 @@ export default function ChildDetail() {
         />
       </Section>
 
+      <ListItem
+        icon={ListChecks}
+        title={t('child.protectionTips')}
+        onPress={() => router.push('/(parent)/protection-tips')}
+      />
+
       <Button
         title={t('child.deleteChild')}
         icon={Trash}
@@ -250,11 +257,23 @@ function DeviceCard({
                 : t('child.neverSeen')}
           </AppText>
         </View>
-        <StatusPill
-          tone={online ? 'success' : 'neutral'}
-          label={online ? t('child.online') : '—'}
-        />
+        {device.inOtherSpace ? (
+          <StatusPill tone="danger" label={t('child.otherSpace')} />
+        ) : (
+          <StatusPill
+            tone={online ? 'success' : 'neutral'}
+            label={online ? t('child.online') : '—'}
+          />
+        )}
       </Row>
+      {device.inOtherSpace ? (
+        <Row>
+          <WarningCircle size={18} color={theme.danger} weight="fill" />
+          <AppText variant="error" style={styles.flex}>
+            {t('child.otherSpaceWarning')}
+          </AppText>
+        </Row>
+      ) : null}
       {missingPermissions ? (
         <Row>
           <WarningCircle size={18} color={theme.danger} weight="fill" />

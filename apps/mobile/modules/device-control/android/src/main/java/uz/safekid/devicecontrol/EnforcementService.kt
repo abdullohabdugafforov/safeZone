@@ -29,6 +29,7 @@ class EnforcementService : Service() {
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     isRunning = true
     startInForeground()
+    SpaceWatcher.register(this)
     if (scheduler == null) startLoops()
     return START_STICKY
   }

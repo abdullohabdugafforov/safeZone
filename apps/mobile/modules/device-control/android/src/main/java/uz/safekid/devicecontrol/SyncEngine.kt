@@ -19,6 +19,7 @@ class SyncEngine(private val context: Context) {
       .put("permissionStatus", JSONObject(permissions))
       .put("appVersion", appVersion())
       .put("enforcementActive", Permissions.isAccessibilityEnabled(context))
+      .put("inOtherSpace", SpaceWatcher.isInOtherSpace(context))
     batteryLevel()?.let { body.put("batteryLevel", it) }
 
     val res = session.request("POST", "/device/heartbeat", body)

@@ -93,6 +93,9 @@ const en = {
     neverSeen: 'Not connected yet',
     syncing: 'Applying settings…',
     permissionsMissing: 'Protection is not fully enabled on this phone',
+    otherSpace: 'In other space',
+    otherSpaceWarning: "The phone is in another space where SafeKid can't block apps.",
+    protectionTips: 'Make protection harder to bypass',
     unlink: 'Unlink device',
     deleteChild: 'Delete child',
     deleteChildConfirm:
@@ -218,6 +221,9 @@ const en = {
       TIME_CHANGED: '{{child}}: the phone clock was changed',
       HEARTBEAT_LOST:
         'No contact with {{child}}’s phone. It may be off, offline, or SafeKid was removed.',
+      SECOND_SPACE_ENTERED:
+        "{{child}} switched to another space on the phone (e.g. Second space). SafeKid can't control it there.",
+      SECOND_SPACE_LEFT: '{{child}} came back from the other space after {{minutes}} min.',
       APP_REMOVED_SUSPECTED: 'SafeKid may have been removed from {{child}}’s phone',
     },
     target: {
@@ -225,7 +231,18 @@ const en = {
       device_admin: 'device admin settings',
       accessibility_settings: 'accessibility settings',
       app_settings: 'SafeKid app settings',
+      second_space: 'second space settings',
     },
+  },
+  protectionTips: {
+    title: 'Full protection checklist',
+    items: [
+      'Delete «Second space» and «Dual apps»: Settings → Special features → Second space → delete. Only possible from the main space, which SafeKid protects.',
+      "Use a screen-lock password the child doesn't know for any second space, or none at all. Xiaomi lets you unlock straight into a second space with its own password.",
+      'Turn off the accessibility quick-launch button for SafeKid: Settings → Accessibility → SafeKid protection → quick launch.',
+      'Battery: SafeKid → App info → Battery → No restrictions, and allow Autostart.',
+      "Keep the phone's lock screen and Google account under your control.",
+    ],
   },
   time: {
     justNow: 'just now',

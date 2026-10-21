@@ -14,6 +14,7 @@ object TamperGuard {
     DEVICE_ADMIN("device_admin"),
     ACCESSIBILITY_SETTINGS("accessibility_settings"),
     APP_SETTINGS("app_settings"),
+    SECOND_SPACE("second_space"),
   }
 
   data class State(
@@ -30,7 +31,8 @@ object TamperGuard {
     appSettingsGraceUntil = System.currentTimeMillis() + seconds * 1000
   }
 
-  private val SETTINGS_HINTS = listOf("settings", "permissionmanager", "securitycenter", "iqoo.secure", "safecenter")
+  private val SETTINGS_HINTS =
+    listOf("settings", "permissionmanager", "securitycenter", "securitycore", "iqoo.secure", "safecenter")
 
   fun classify(pkg: String, className: String?, state: State): Target? {
     val cls = className?.lowercase() ?: return null
@@ -38,6 +40,8 @@ object TamperGuard {
     val settingsLike = SETTINGS_HINTS.any { p.contains(it) }
 
     if (cls.contains("uninstall")) return Target.UNINSTALL
+    // Entering, creating or deleting another user space (Xiaomi Second space, multi-user).
+    if (settingsLike && SPACE.any { cls.contains(it) }) return Target.SECOND_SPACE
     if (cls.contains("deviceadmin")) return if (state.adminActive) Target.DEVICE_ADMIN else null
     if (settingsLike && cls.contains("accessibility")) {
       return if (state.appSettingsGrace) null else Target.ACCESSIBILITY_SETTINGS
@@ -47,6 +51,11 @@ object TamperGuard {
     }
     return null
   }
+
+  private val SPACE = listOf(
+    "secondspace", "second_space", "spaceswitch", "switchspace", "switchuser",
+    "multiuser", "usersettings", "userdetails",
+  )
 
   private val APP_DETAILS = listOf("installedappdetails", "appinfodashboard", "appdetails", "applicationdetails", "appinfo")
 }
