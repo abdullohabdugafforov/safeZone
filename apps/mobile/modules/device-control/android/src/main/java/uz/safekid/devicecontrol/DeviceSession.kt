@@ -67,6 +67,8 @@ class DeviceSession private constructor(context: Context) {
     Log.w(TAG, "Server rejected device credentials; stopping enforcement")
     store.clear()
     EnforcementService.stop(appContext)
+    // Unlinked by the parent: let the phone be used (and SafeKid be removed) normally.
+    Permissions.removeOwnDeviceAdmin(appContext)
     DeviceEvents.emitUnlinked()
   }
 

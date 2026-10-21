@@ -51,6 +51,13 @@ object Permissions {
 
   fun adminComponent(context: Context) = ComponentName(context, SafeKidDeviceAdminReceiver::class.java)
 
+  /** An app may always drop its own admin rights; done when the parent unlinks the device. */
+  fun removeOwnDeviceAdmin(context: Context) {
+    val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val admin = adminComponent(context)
+    if (dpm.isAdminActive(admin)) runCatching { dpm.removeActiveAdmin(admin) }
+  }
+
   private fun hasUsageAccess(context: Context): Boolean {
     val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
     val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

@@ -83,6 +83,7 @@ class DeviceControlModule : Module() {
     AsyncFunction("clearDeviceCredentials") {
       EnforcementService.stop(context)
       session.store.clear()
+      Permissions.removeOwnDeviceAdmin(context)
     }
 
     AsyncFunction("getAccessToken") { session.accessToken() }
