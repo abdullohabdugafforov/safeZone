@@ -43,6 +43,7 @@ export const deviceSchema = z.object({
   permissionStatus: permissionStatusSchema,
   appliedPolicyVersion: z.number().int().nullable(),
   lastHeartbeatAt: isoDateTimeSchema.nullable(),
+  inOtherSpace: z.boolean(),
   createdAt: isoDateTimeSchema,
 });
 export type Device = z.infer<typeof deviceSchema>;
@@ -53,6 +54,8 @@ export const heartbeatBodySchema = z.object({
   appVersion: z.string().trim().min(1).max(50),
   batteryLevel: z.number().int().min(0).max(100).optional(),
   enforcementActive: z.boolean(),
+  /** The phone is currently in another user space (e.g. Xiaomi "Second space"), where SafeKid can't enforce. */
+  inOtherSpace: z.boolean().optional(),
 });
 export type HeartbeatBody = z.infer<typeof heartbeatBodySchema>;
 

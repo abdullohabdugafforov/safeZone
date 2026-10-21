@@ -215,6 +215,45 @@ describe('devices (e2e)', () => {
     });
   });
 
+  describe('second space', () => {
+    it('shows when the phone is in another user space and records enter/leave', async () => {
+      await http()
+        .post('/v1/device/heartbeat')
+        .set(device.auth)
+        .send(heartbeat({ inOtherSpace: true }))
+        .expect(200);
+      const seen = await http().get(`/v1/devices/${device.deviceId}`).set(alice.auth).expect(200);
+      expect(seen.body.inOtherSpace).toBe(true);
+
+      await http()
+        .post('/v1/device/alerts')
+        .set(device.auth)
+        .send({ type: 'SECOND_SPACE_ENTERED' })
+        .expect(204);
+      await http()
+        .post('/v1/device/alerts')
+        .set(device.auth)
+        .send({ type: 'SECOND_SPACE_LEFT', minutes: 12 })
+        .expect(204);
+      await http()
+        .post('/v1/device/alerts')
+        .set(device.auth)
+        .send({ type: 'TAMPER_ATTEMPT', target: 'second_space' })
+        .expect(204);
+      const alerts = await http().get('/v1/alerts').set(alice.auth).expect(200);
+      expect(alerts.body.map((a: { type: string }) => a.type).sort()).toEqual([
+        'SECOND_SPACE_ENTERED',
+        'SECOND_SPACE_LEFT',
+        'TAMPER_ATTEMPT',
+      ]);
+
+      await http().post('/v1/device/heartbeat').set(device.auth).send(heartbeat()).expect(200);
+      expect(
+        (await http().get(`/v1/devices/${device.deviceId}`).set(alice.auth)).body.inOtherSpace,
+      ).toBe(false);
+    });
+  });
+
   describe('parent access control', () => {
     it("other parents can't see or unlink the device", async () => {
       await http().get(`/v1/devices/${device.deviceId}`).set(bob.auth).expect(404);

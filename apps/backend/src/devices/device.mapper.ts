@@ -25,6 +25,7 @@ export function toDeviceDto(device: Device): DeviceDto {
     permissionStatus: parsePermissionStatus(device.permissionStatus),
     appliedPolicyVersion: device.appliedPolicyVersion,
     lastHeartbeatAt: device.lastHeartbeatAt?.toISOString() ?? null,
+    inOtherSpace: device.inOtherSpace,
     createdAt: device.createdAt.toISOString(),
   };
 }

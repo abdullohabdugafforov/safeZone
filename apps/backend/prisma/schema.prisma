@@ -60,6 +60,8 @@ enum AlertType {
   ENFORCEMENT_STOPPED
   TIME_CHANGED
   TAMPER_ATTEMPT
+  SECOND_SPACE_ENTERED
+  SECOND_SPACE_LEFT
   HEARTBEAT_LOST
   APP_REMOVED_SUSPECTED
 }
@@ -158,6 +160,8 @@ model Device {
   permissionStatus       Json         @default("{}") @map("permission_status")
   appliedPolicyVersion   Int?         @map("applied_policy_version")
   enforcementActive      Boolean      @default(false) @map("enforcement_active")
+  /// Phone is in another user space where SafeKid cannot enforce.
+  inOtherSpace           Boolean      @default(false) @map("in_other_space")
   batteryLevel           Int?         @map("battery_level")
   status                 DeviceStatus @default(active)
   lastHeartbeatAt        DateTime?    @map("last_heartbeat_at") @db.Timestamptz(3)

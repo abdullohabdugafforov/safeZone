@@ -85,6 +85,7 @@ export class DevicesService {
         appVersion: body.appVersion,
         batteryLevel: body.batteryLevel ?? null,
         enforcementActive: body.enforcementActive,
+        inOtherSpace: body.inOtherSpace ?? false,
         appliedPolicyVersion: body.appliedPolicyVersion,
       },
     });

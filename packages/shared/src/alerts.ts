@@ -11,6 +11,8 @@ export const deviceAlertTypeSchema = z.enum([
   'ENFORCEMENT_STOPPED',
   'TIME_CHANGED',
   'TAMPER_ATTEMPT',
+  'SECOND_SPACE_ENTERED',
+  'SECOND_SPACE_LEFT',
 ]);
 export type DeviceAlertType = z.infer<typeof deviceAlertTypeSchema>;
 
@@ -36,7 +38,23 @@ export const deviceAlertBodySchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('TAMPER_ATTEMPT'),
     /** What was blocked: a protected settings screen or an uninstall dialog. */
-    target: z.enum(['device_admin', 'uninstall', 'accessibility_settings', 'app_settings']),
+    target: z.enum([
+      'device_admin',
+      'uninstall',
+      'accessibility_settings',
+      'app_settings',
+      'second_space',
+    ]),
+  }),
+  /** Switched to another Android user (Xiaomi Second space, Vivo/Oppo equivalents). */
+  z.object({ type: z.literal('SECOND_SPACE_ENTERED') }),
+  z.object({
+    type: z.literal('SECOND_SPACE_LEFT'),
+    minutes: z
+      .number()
+      .int()
+      .min(0)
+      .max(60 * 24 * 30),
   }),
 ]);
 export type DeviceAlertBody = z.infer<typeof deviceAlertBodySchema>;
